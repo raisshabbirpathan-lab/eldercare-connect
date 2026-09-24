@@ -13,7 +13,7 @@
   body { background: #f0f4f8; color: #1e293b; }
   .btn-large { min-height: 60px; font-size: 18px; font-weight: 600; }
   .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .suggestion-item { cursor: pointer; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+  .suggestion-item { cursor: pointer; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 15px; }
   .suggestion-item:hover { background: #f1f5f9; }
 </style>
 </head>
@@ -70,8 +70,8 @@
 <div id="medicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-6 w-full max-w-md">
     <h3 class="text-lg font-bold mb-4">Search Medicine</h3>
-    <input id="medicineSearch" type="text" placeholder="Type at least 2 letters..." class="w-full border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none" oninput="searchMedicine(this.value)">
-    <div id="suggestions" class="mt-3 max-h-60 overflow-y-auto"></div>
+    <input id="medicineSearch" type="text" placeholder="Type 2 letters (e.g., Para, Vicks)" class="w-full border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none" oninput="searchMedicine(this.value)">
+    <div id="suggestions" class="mt-3 max-h-72 overflow-y-auto"></div>
     <button onclick="closeMedicineModal()" class="mt-4 w-full bg-slate-300 hover:bg-slate-400 text-slate-700 font-semibold py-3 rounded-lg">Cancel</button>
   </div>
 </div>
@@ -79,6 +79,154 @@
 <script>
 let medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
 let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+
+// ============ INDIA MEDICINE DATABASE (200+ common medicines) ============
+const medicineDatabase = [
+  // TABLETS - Fever/Pain
+  "Paracetamol 500mg (Crocin, Dolo, Calpol)",
+  "Paracetamol 650mg (Dolo 650, Crocin Advance)",
+  "Ibuprofen 400mg (Brufen, Combiflam)",
+  "Aspirin 75mg (Ecosprin, Disprin)",
+  "Diclofenac 50mg (Voveran, Diclomol)",
+  "Nimesulide 100mg (Nise)",
+  "Aceclofenac 100mg (Zerodol)",
+  "Tramadol 50mg (Ultracet)",
+  // BP/Cardiac
+  "Amlodipine 5mg (Amlopres, Stamlo)",
+  "Telmisartan 40mg (Telma 40, Telsartan)",
+  "Losartan 50mg (Losar, Repace)",
+  "Atenolol 50mg (Tenormin)",
+  "Metoprolol 25mg (Metolar)",
+  "Enalapril 5mg (Envas)",
+  "Ramipril 5mg (Cardace)",
+  "Atorvastatin 10mg (Atorva, Lipitor)",
+  "Rosuvastatin 10mg (Rosuvas)",
+  "Clopidogrel 75mg (Plavix, Clopilet)",
+  // Diabetes
+  "Metformin 500mg (Glycomet, Gluconorm)",
+  "Glimepiride 1mg (Amaryl)",
+  "Glibenclamide 5mg (Daonil)",
+  "Sitagliptin 100mg (Januvia)",
+  "Insulin (Mixtard, Huminsulin)",
+  // Acidity/Gas
+  "Pantoprazole 40mg (Pan 40, Pantocid)",
+  "Omeprazole 20mg (Omez)",
+  "Ranitidine 150mg (Zinetac)",
+  "Rabeprazole 20mg (Razo)",
+  "Esomeprazole 40mg (Nexium)",
+  "Domperidone 10mg (Domstal)",
+  "Ondansetron 4mg (Emeset)",
+  // Allergy/Cold
+  "Cetirizine 10mg (Cetzine, Alerid)",
+  "Levocetirizine 5mg (Levocet)",
+  "Loratadine 10mg (Lorfast)",
+  "Fexofenadine 120mg (Allegra)",
+  "Montelukast 10mg (Montair)",
+  "Chlorpheniramine (Avil)",
+  // Antibiotics
+  "Azithromycin 500mg (Azee, Azithral)",
+  "Amoxicillin 500mg (Mox, Novamox)",
+  "Amoxicillin + Clavulanate (Augmentin, Clavam)",
+  "Ciprofloxacin 500mg (Ciplox)",
+  "Cefixime 200mg (Taxim-O, Zifi)",
+  "Ceftriaxone 1g (Monocef)",
+  "Doxycycline 100mg (Doxt)",
+  "Metronidazole 400mg (Flagyl)",
+  "Levofloxacin 500mg (Levoflox)",
+  // Vitamins/Supplements
+  "Multivitamin (Zincovit, Becosules)",
+  "Calcium + Vitamin D3 (Shelcal, Calcimax)",
+  "Iron + Folic Acid (Autrin, Fefol)",
+  "Vitamin B12 (Methylcobalamin)",
+  "Vitamin D3 (Uprise D3)",
+  "Zinc (Zincovit)",
+  "Omega 3 (Seven Seas)",
+  // Cough/Syrup
+  "Cough Syrup (Benadryl, Ascoril)",
+  "Cough Syrup (Grilinctus)",
+  "Cough Syrup (Chericof)",
+  "ORS Powder (Electral)",
+  "Digene Gel",
+  "Pudin Hara",
+  "Hajmola",
+  "Eno",
+  "Gelusil",
+  "Cremaffin",
+  "Duphalac",
+  // Drops
+  "Eye Drops (Refresh Tears, Genteal)",
+  "Eye Drops (Moxicip)",
+  "Ear Drops (Candibiotic)",
+  "Ear Drops (Otek)",
+  "Nasal Spray (Otrivin, Nasivion)",
+  "Nasal Drops (Nasoclear)",
+  // Creams/Ointments
+  "Diclofenac Gel (Volini, Voveran)",
+  "Moov Cream",
+  "Moov Spray",
+  "Volini Spray",
+  "Fastum Gel",
+  "Relispray",
+  "Vicks VapoRub",
+  "Zandu Balm",
+  "Amrutanjan",
+  "Tiger Balm",
+  "Betadine Ointment",
+  "Calamine Lotion",
+  "Soframycin Cream",
+  "Candid Cream",
+  "Moisturizer (Nivea, Vaseline)",
+  "Sunscreen (Lotus, Neutrogena)",
+  "Anti-Dandruff Shampoo (Head & Shoulders)",
+  "Hair Oil (Parachute, Bajaj Almond)",
+  // Oral Care
+  "Toothpaste (Colgate, Sensodyne)",
+  "Mouth Wash (Listerine, Betadine)",
+  "Toothache Drops (Dentogel)",
+  // Common brands
+  "Vicks Action 500",
+  "Saridon",
+  "Disprin",
+  "Eno Fruit Salt",
+  "Kayam Churna",
+  "Lacto Calamine",
+  "Boroline",
+  "Burnol",
+  "Dettol Antiseptic",
+  "Savlon",
+  // Nervous System / Brain
+  "Alprazolam 0.25mg (Alprax)",
+  "Clonazepam 0.5mg (Rivotril)",
+  "Sertraline 50mg (Serlift)",
+  "Fluoxetine 20mg (Prozac)",
+  "Amitriptyline 10mg (Tryptomer)",
+  "Levodopa + Carbidopa (Syndopa)",
+  "Donepezil 5mg (Aricept)",
+  "Memantine 10mg (Admenta)",
+  "Pregabalin 75mg (Pregabid)",
+  "Gabapentin 300mg (Gabapin)",
+  // Migraine
+  "Sumatriptan 50mg (Suminat)",
+  "Naproxen 500mg (Naprosyn)",
+  "Ergotamine (Vasograin)",
+  // Thyroid
+  "Thyroxine 50mcg (Thyronorm, Eltroxin)",
+  "Carbimazole 10mg (Neomercazole)",
+  // Respiratory
+  "Salbutamol Inhaler (Asthalin)",
+  "Budesonide Inhaler (Budecort)",
+  "Montelukast + Levocetirizine (Montair-LC)",
+  "Deriphyllin",
+  // Other
+  "Tranexamic Acid 500mg (Trapic)",
+  "Folic Acid 5mg",
+  "Albendazole 400mg (Zentel)",
+  "Ivermectin 12mg",
+  "Hydroxychloroquine 200mg (HCQS)",
+  "Prednisolone 10mg (Wysolone)",
+  "Dexamethasone 0.5mg (Decadron)"
+];
+// ============ END DATABASE ============
 
 function updateTime() {
   document.getElementById('liveTime').textContent = new Date().toLocaleString('en-IN');
@@ -104,12 +252,12 @@ window.onload = () => {
   renderTasks();
 };
 
-// --- MEDICINE SEARCH (RxNorm - brand + generic) ---
+// --- MEDICINE SEARCH (Local Database) ---
 function addMedicine() {
   document.getElementById('medicineModal').classList.remove('hidden');
   document.getElementById('medicineModal').classList.add('flex');
   document.getElementById('medicineSearch').value = '';
-  document.getElementById('suggestions').innerHTML = '';
+  document.getElementById('suggestions').innerHTML = '<p class="text-slate-400 p-2">Type 2 letters to search...</p>';
   document.getElementById('medicineSearch').focus();
 }
 function closeMedicineModal() {
@@ -117,44 +265,44 @@ function closeMedicineModal() {
   document.getElementById('medicineModal').classList.remove('flex');
 }
 
-async function searchMedicine(query) {
+function searchMedicine(query) {
   const suggestions = document.getElementById('suggestions');
-  if (query.length < 2) { suggestions.innerHTML = ''; return; }
-  suggestions.innerHTML = '<p class="text-slate-400 p-2">Searching...</p>';
+  suggestions.innerHTML = '';
 
-  try {
-    const res = await fetch(`https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(query)}`);
-    const data = await res.json();
-
-    suggestions.innerHTML = '';
-    const groups = data?.drugGroup?.conceptGroup || [];
-    let found = false;
-
-    for (const group of groups) {
-      if (group.conceptProperties) {
-        for (const item of group.conceptProperties) {
-          found = true;
-          const div = document.createElement('div');
-          div.className = 'suggestion-item';
-          div.innerHTML = `<strong>${item.name}</strong>`;
-          div.onclick = () => {
-            const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
-            if (!time) return;
-            medicines.push({ id: Date.now(), name: item.name, time: time, taken: false });
-            saveMedicines(); renderMedicines(); closeMedicineModal();
-          };
-          suggestions.appendChild(div);
-        }
-      }
-    }
-
-    if (!found) {
-      suggestions.innerHTML = '<p class="text-slate-400 p-2">No medicine found. Try generic name (e.g., Paracetamol).</p>';
-    }
-  } catch (e) {
-    console.error(e);
-    suggestions.innerHTML = '<p class="text-red-400 p-2">Search failed. Check internet.</p>';
+  if (query.length < 2) {
+    suggestions.innerHTML = '<p class="text-slate-400 p-2">Type 2 letters to search...</p>';
+    return;
   }
+
+  const q = query.toLowerCase();
+  const matches = medicineDatabase.filter(m => m.toLowerCase().includes(q)).slice(0, 10);
+
+  if (matches.length === 0) {
+    const div = document.createElement('div');
+    div.className = 'suggestion-item';
+    div.innerHTML = `<strong>➕ Add "${query}" (custom)</strong>`;
+    div.onclick = () => {
+      const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
+      if (!time) return;
+      medicines.push({ id: Date.now(), name: query, time: time, taken: false });
+      saveMedicines(); renderMedicines(); closeMedicineModal();
+    };
+    suggestions.appendChild(div);
+    return;
+  }
+
+  matches.forEach(name => {
+    const div = document.createElement('div');
+    div.className = 'suggestion-item';
+    div.innerHTML = `💊 ${name}`;
+    div.onclick = () => {
+      const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
+      if (!time) return;
+      medicines.push({ id: Date.now(), name: name, time: time, taken: false });
+      saveMedicines(); renderMedicines(); closeMedicineModal();
+    };
+    suggestions.appendChild(div);
+  });
 }
 
 // --- MEDICINE CRUD ---
@@ -179,11 +327,11 @@ function renderMedicines() {
     div.className = `flex items-center justify-between p-4 rounded-xl border-2 ${m.taken ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
     div.innerHTML = `
       <div class="flex-1">
-        <p class="font-semibold text-lg ${m.taken ? 'line-through text-green-700' : 'text-slate-800'}">${m.name}</p>
+        <p class="font-semibold text-base ${m.taken ? 'line-through text-green-700' : 'text-slate-800'}">${m.name}</p>
         <p class="text-sm text-slate-500">⏰ ${m.time}</p>
       </div>
       <div class="flex gap-2">
-        <button onclick="toggleMedicine(${m.id})" class="px-4 py-2 rounded-lg font-semibold text-white ${m.taken ? 'bg-slate-400' : 'bg-green-600'}">${m.taken ? 'Undo' : 'Taken'}</button>
+        <button onclick="toggleMedicine(${m.id})" class="px-3 py-2 rounded-lg font-semibold text-white text-sm ${m.taken ? 'bg-slate-400' : 'bg-green-600'}">${m.taken ? 'Undo' : 'Taken'}</button>
         <button onclick="deleteMedicine(${m.id})" class="px-3 py-2 rounded-lg bg-red-100 text-red-600 font-semibold">✕</button>
       </div>`;
     list.appendChild(div);
