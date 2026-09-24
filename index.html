@@ -104,7 +104,7 @@ window.onload = () => {
   renderTasks();
 };
 
-// --- MEDICINE SEARCH (NIH Clinical Tables) ---
+// --- MEDICINE SEARCH (RxNorm - brand + generic) ---
 function addMedicine() {
   document.getElementById('medicineModal').classList.remove('hidden');
   document.getElementById('medicineModal').classList.add('flex');
@@ -121,28 +121,38 @@ async function searchMedicine(query) {
   const suggestions = document.getElementById('suggestions');
   if (query.length < 2) { suggestions.innerHTML = ''; return; }
   suggestions.innerHTML = '<p class="text-slate-400 p-2">Searching...</p>';
-  
+
   try {
-    const res = await fetch(`https://clinicaltables.nlm.nih.gov/api/rxterms/v3/search?terms=${encodeURIComponent(query)}&maxList=8`);
+    const res = await fetch(`https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(query)}`);
     const data = await res.json();
+
     suggestions.innerHTML = '';
-    if (data[1] && data[1].length > 0) {
-      data[1].forEach(name => {
-        const div = document.createElement('div');
-        div.className = 'suggestion-item';
-        div.textContent = name;
-        div.onclick = () => {
-          const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
-          if (!time) return;
-          medicines.push({ id: Date.now(), name: name, time: time, taken: false });
-          saveMedicines(); renderMedicines(); closeMedicineModal();
-        };
-        suggestions.appendChild(div);
-      });
-    } else {
-      suggestions.innerHTML = '<p class="text-slate-400 p-2">No medicine found. Check spelling.</p>';
+    const groups = data?.drugGroup?.conceptGroup || [];
+    let found = false;
+
+    for (const group of groups) {
+      if (group.conceptProperties) {
+        for (const item of group.conceptProperties) {
+          found = true;
+          const div = document.createElement('div');
+          div.className = 'suggestion-item';
+          div.innerHTML = `<strong>${item.name}</strong>`;
+          div.onclick = () => {
+            const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
+            if (!time) return;
+            medicines.push({ id: Date.now(), name: item.name, time: time, taken: false });
+            saveMedicines(); renderMedicines(); closeMedicineModal();
+          };
+          suggestions.appendChild(div);
+        }
+      }
+    }
+
+    if (!found) {
+      suggestions.innerHTML = '<p class="text-slate-400 p-2">No medicine found. Try generic name (e.g., Paracetamol).</p>';
     }
   } catch (e) {
+    console.error(e);
     suggestions.innerHTML = '<p class="text-red-400 p-2">Search failed. Check internet.</p>';
   }
 }
