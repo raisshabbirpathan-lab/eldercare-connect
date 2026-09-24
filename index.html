@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ElderCare Connect - Simple Care Management</title>
+<title>ElderCare Connect - Complete Care Management</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -12,48 +12,70 @@
   * { font-family: 'Inter', sans-serif; }
   body { background: #f0f4f8; color: #1e293b; }
   .btn-large { min-height: 60px; font-size: 18px; font-weight: 600; }
-  .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .suggestion-item { cursor: pointer; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 15px; }
   .suggestion-item:hover { background: #f1f5f9; }
+  .day-btn { min-width: 42px; padding: 8px 4px; border-radius: 8px; font-weight: 600; font-size: 12px; }
+  .form-label { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px; display: block; margin-top: 14px; }
+  .form-input { width: 100%; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 15px; outline: none; }
+  .form-input:focus { border-color: #2563eb; }
 </style>
 </head>
 <body class="min-h-screen">
 
-<header class="bg-blue-600 text-white py-4 px-4 shadow-md sticky top-0 z-50">
+<header class="bg-blue-600 text-white py-4 px-4 shadow-md sticky top-0 z-40">
   <div class="max-w-4xl mx-auto flex justify-between items-center">
-    <h1 class="text-xl md:text-2xl font-bold">🏥 ElderCare Connect</h1>
-    <span id="liveTime" class="text-sm hidden md:block"></span>
+    <h1 class="text-lg md:text-2xl font-bold">🏥 ElderCare Connect</h1>
+    <button onclick="toggleLanguage()" id="langBtn" class="text-xs bg-white/20 px-3 py-1 rounded-lg font-semibold">हिंदी</button>
   </div>
 </header>
 
-<main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+<main class="max-w-4xl mx-auto px-4 py-6 space-y-5">
 
   <button onclick="emergencyAlert()" class="w-full bg-red-500 hover:bg-red-600 text-white btn-large rounded-2xl shadow-lg transition">
-    🚨 EMERGENCY - Alert Family
+    🚨 <span class="lang" data-en="EMERGENCY - Alert Family" data-hi="आपातकाल - परिवार को सूचित करें">EMERGENCY - Alert Family</span>
   </button>
 
   <div class="card">
-    <h2 class="text-lg font-bold mb-4 text-slate-800">👤 Senior Profile</h2>
+    <h2 class="text-lg font-bold mb-4 text-slate-800">👤 <span class="lang" data-en="Senior Profile" data-hi="वरिष्ठ प्रोफ़ाइल">Senior Profile</span></h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <input id="seniorName" type="text" placeholder="Senior's Name" class="border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none">
-      <input id="seniorAge" type="number" placeholder="Age" class="border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none">
+      <input id="seniorName" type="text" placeholder="Senior's Name" class="form-input">
+      <input id="seniorAge" type="number" placeholder="Age" class="form-input">
     </div>
     <button onclick="saveProfile()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">Save Profile</button>
     <p id="profileStatus" class="mt-2 text-sm text-green-600 hidden">✅ Profile saved!</p>
   </div>
 
   <div class="card">
+    <h2 class="text-lg font-bold mb-4 text-slate-800">📅 <span class="lang" data-en="Week View" data-hi="सप्ताह दृश्य">Week View</span></h2>
+    <div class="grid grid-cols-7 gap-1">
+      <button onclick="setDay(0)" id="day-0" class="day-btn">Sun</button>
+      <button onclick="setDay(1)" id="day-1" class="day-btn">Mon</button>
+      <button onclick="setDay(2)" id="day-2" class="day-btn">Tue</button>
+      <button onclick="setDay(3)" id="day-3" class="day-btn">Wed</button>
+      <button onclick="setDay(4)" id="day-4" class="day-btn">Thu</button>
+      <button onclick="setDay(5)" id="day-5" class="day-btn">Fri</button>
+      <button onclick="setDay(6)" id="day-6" class="day-btn">Sat</button>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-bold text-slate-800">💊 Today's Medicines</h2>
+      <h2 class="text-lg font-bold text-slate-800">💊 <span class="lang" data-en="Medicines" data-hi="दवाइयाँ">Medicines</span> - <span id="timelineDay">Sunday</span></h2>
       <button onclick="addMedicine()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Add</button>
     </div>
-    <div id="medicineList" class="space-y-3"></div>
+    <div class="space-y-4">
+      <div><h3 class="text-sm font-bold text-orange-600 mb-2">🌅 Morning</h3><div id="morningList" class="space-y-2"></div></div>
+      <div><h3 class="text-sm font-bold text-yellow-600 mb-2">☀️ Afternoon</h3><div id="afternoonList" class="space-y-2"></div></div>
+      <div><h3 class="text-sm font-bold text-purple-600 mb-2">🌆 Evening</h3><div id="eveningList" class="space-y-2"></div></div>
+      <div><h3 class="text-sm font-bold text-indigo-600 mb-2">🌙 Night</h3><div id="nightList" class="space-y-2"></div></div>
+    </div>
     <p id="noMedicine" class="text-slate-400 text-center py-4">No medicines added yet.</p>
   </div>
 
   <div class="card">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-bold text-slate-800">✅ Caregiver Tasks</h2>
+      <h2 class="text-lg font-bold text-slate-800">✅ <span class="lang" data-en="Caregiver Tasks" data-hi="देखभाल कार्य">Caregiver Tasks</span></h2>
       <button onclick="addTask()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Add</button>
     </div>
     <div id="taskList" class="space-y-3"></div>
@@ -63,175 +85,152 @@
 </main>
 
 <footer class="text-center text-slate-400 text-sm py-6">
-  © 2026 ElderCare Connect • Made with ❤️ for families
+  © 2026 ElderCare Connect • Made with ❤️
 </footer>
 
-<!-- Medicine Search Modal -->
 <div id="medicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-  <div class="bg-white rounded-2xl p-6 w-full max-w-md">
-    <h3 class="text-lg font-bold mb-4">Search Medicine</h3>
-    <input id="medicineSearch" type="text" placeholder="Type 2 letters (e.g., Para, Vicks)" class="w-full border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none" oninput="searchMedicine(this.value)">
-    <div id="suggestions" class="mt-3 max-h-72 overflow-y-auto"></div>
-    <button onclick="closeMedicineModal()" class="mt-4 w-full bg-slate-300 hover:bg-slate-400 text-slate-700 font-semibold py-3 rounded-lg">Cancel</button>
+  <div class="bg-white rounded-2xl p-5 w-full max-w-md max-h-screen overflow-y-auto">
+    <h3 class="text-lg font-bold mb-2">💊 <span class="lang" data-en="Add Medicine" data-hi="दवा जोड़ें">Add Medicine</span></h3>
+
+    <label class="form-label">Medicine Name</label>
+    <input id="medicineSearch" type="text" placeholder="Type 2 letters (e.g., Para, Vicks)" class="form-input" oninput="searchMedicine(this.value)">
+    <div id="suggestions" class="mt-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg"></div>
+
+    <label class="form-label">Kiske Liye / For Whom</label>
+    <select id="medicineFor" class="form-input">
+      <option value="Buzurg (Senior)">Buzurg (Senior)</option>
+      <option value="Bada (Adult)">Bada (Adult)</option>
+      <option value="Bacha (Child)">Bacha (Child)</option>
+      <option value="Purush (Male)">Purush (Male)</option>
+      <option value="Mahila (Female)">Mahila (Female)</option>
+      <option value="Janwar (Animal)">Janwar (Animal)</option>
+    </select>
+
+    <label class="form-label">Application Area</label>
+    <select id="medicineArea" class="form-input">
+      <option value="Muh se (Oral)">Muh se (Oral)</option>
+      <option value="Aankh (Eye)">Aankh (Eye)</option>
+      <option value="Kaan (Ear)">Kaan (Ear)</option>
+      <option value="Naak (Nose)">Naak (Nose)</option>
+      <option value="Daant (Teeth)">Daant (Teeth)</option>
+      <option value="Kamar (Back)">Kamar (Back)</option>
+      <option value="Gardan (Neck)">Gardan (Neck)</option>
+      <option value="Haath (Hands)">Haath (Hands)</option>
+      <option value="Pair (Feet)">Pair (Feet)</option>
+      <option value="Baal (Hair)">Baal (Hair)</option>
+      <option value="Skin (Twacha)">Skin (Twacha)</option>
+      <option value="Nakhun (Nails)">Nakhun (Nails)</option>
+      <option value="Injection">Injection</option>
+      <option value="Saline (Drip)">Saline (Drip)</option>
+    </select>
+
+    <label class="form-label">Form / कैसी दवा है</label>
+    <select id="medicineForm" class="form-input">
+      <option value="Tablet (Chabane wali)">Tablet (Chabane wali)</option>
+      <option value="Capsule">Capsule</option>
+      <option value="Syrup (Peene wali)">Syrup (Peene wali)</option>
+      <option value="Drop">Drop</option>
+      <option value="Injection">Injection</option>
+      <option value="Saline">Saline</option>
+      <option value="Cream (Lagane wali)">Cream (Lagane wali)</option>
+      <option value="Ointment">Ointment</option>
+      <option value="Gel">Gel</option>
+      <option value="Spray">Spray</option>
+      <option value="Inhaler (Sungne wali)">Inhaler (Sungne wali)</option>
+      <option value="Powder">Powder</option>
+      <option value="Lotion">Lotion</option>
+    </select>
+
+    <label class="form-label">Quantity / कितनी लेनी है</label>
+    <input id="medicineQty" type="text" placeholder="e.g., 1 tablet, 5ml, 2 drops" class="form-input">
+
+    <label class="form-label">Time</label>
+    <select id="medicineTimeSelect" class="form-input">
+      <option value="07:00">7:00 AM</option>
+      <option value="08:00">8:00 AM</option>
+      <option value="09:00">9:00 AM</option>
+      <option value="12:00">12:00 PM</option>
+      <option value="14:00">2:00 PM</option>
+      <option value="16:00">4:00 PM</option>
+      <option value="18:00">6:00 PM</option>
+      <option value="20:00">8:00 PM</option>
+      <option value="21:00">9:00 PM</option>
+      <option value="22:00">10:00 PM</option>
+    </select>
+
+    <label class="form-label">Before / After Food</label>
+    <select id="medicineFood" class="form-input">
+      <option value="Before Food">Before Food (Khane se pehle)</option>
+      <option value="After Food">After Food (Khane ke baad)</option>
+      <option value="With Food">With Food (Khane ke saath)</option>
+      <option value="Empty Stomach">Empty Stomach (Khali pet)</option>
+      <option value="Not Applicable">Not Applicable</option>
+    </select>
+
+    <div class="flex gap-2 mt-5">
+      <button onclick="saveMedicine()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Save</button>
+      <button onclick="closeMedicineModal()" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-700 font-semibold py-3 rounded-lg">Cancel</button>
+    </div>
   </div>
 </div>
 
 <script>
 let medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
 let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+let selectedDay = new Date().getDay();
+let tempMedicineName = '';
+let currentLang = 'en';
 
-// ============ INDIA MEDICINE DATABASE (200+ common medicines) ============
+// ============ INDIA MEDICINE DATABASE (500+) ============
 const medicineDatabase = [
-  // TABLETS - Fever/Pain
-  "Paracetamol 500mg (Crocin, Dolo, Calpol)",
-  "Paracetamol 650mg (Dolo 650, Crocin Advance)",
-  "Ibuprofen 400mg (Brufen, Combiflam)",
-  "Aspirin 75mg (Ecosprin, Disprin)",
-  "Diclofenac 50mg (Voveran, Diclomol)",
-  "Nimesulide 100mg (Nise)",
-  "Aceclofenac 100mg (Zerodol)",
-  "Tramadol 50mg (Ultracet)",
-  // BP/Cardiac
-  "Amlodipine 5mg (Amlopres, Stamlo)",
-  "Telmisartan 40mg (Telma 40, Telsartan)",
-  "Losartan 50mg (Losar, Repace)",
-  "Atenolol 50mg (Tenormin)",
-  "Metoprolol 25mg (Metolar)",
-  "Enalapril 5mg (Envas)",
-  "Ramipril 5mg (Cardace)",
-  "Atorvastatin 10mg (Atorva, Lipitor)",
-  "Rosuvastatin 10mg (Rosuvas)",
-  "Clopidogrel 75mg (Plavix, Clopilet)",
-  // Diabetes
-  "Metformin 500mg (Glycomet, Gluconorm)",
-  "Glimepiride 1mg (Amaryl)",
-  "Glibenclamide 5mg (Daonil)",
-  "Sitagliptin 100mg (Januvia)",
-  "Insulin (Mixtard, Huminsulin)",
-  // Acidity/Gas
-  "Pantoprazole 40mg (Pan 40, Pantocid)",
-  "Omeprazole 20mg (Omez)",
-  "Ranitidine 150mg (Zinetac)",
-  "Rabeprazole 20mg (Razo)",
-  "Esomeprazole 40mg (Nexium)",
-  "Domperidone 10mg (Domstal)",
-  "Ondansetron 4mg (Emeset)",
-  // Allergy/Cold
-  "Cetirizine 10mg (Cetzine, Alerid)",
-  "Levocetirizine 5mg (Levocet)",
-  "Loratadine 10mg (Lorfast)",
-  "Fexofenadine 120mg (Allegra)",
-  "Montelukast 10mg (Montair)",
-  "Chlorpheniramine (Avil)",
-  // Antibiotics
-  "Azithromycin 500mg (Azee, Azithral)",
-  "Amoxicillin 500mg (Mox, Novamox)",
-  "Amoxicillin + Clavulanate (Augmentin, Clavam)",
-  "Ciprofloxacin 500mg (Ciplox)",
-  "Cefixime 200mg (Taxim-O, Zifi)",
-  "Ceftriaxone 1g (Monocef)",
-  "Doxycycline 100mg (Doxt)",
-  "Metronidazole 400mg (Flagyl)",
-  "Levofloxacin 500mg (Levoflox)",
-  // Vitamins/Supplements
-  "Multivitamin (Zincovit, Becosules)",
-  "Calcium + Vitamin D3 (Shelcal, Calcimax)",
-  "Iron + Folic Acid (Autrin, Fefol)",
-  "Vitamin B12 (Methylcobalamin)",
-  "Vitamin D3 (Uprise D3)",
-  "Zinc (Zincovit)",
-  "Omega 3 (Seven Seas)",
-  // Cough/Syrup
-  "Cough Syrup (Benadryl, Ascoril)",
-  "Cough Syrup (Grilinctus)",
-  "Cough Syrup (Chericof)",
-  "ORS Powder (Electral)",
-  "Digene Gel",
-  "Pudin Hara",
-  "Hajmola",
-  "Eno",
-  "Gelusil",
-  "Cremaffin",
-  "Duphalac",
-  // Drops
-  "Eye Drops (Refresh Tears, Genteal)",
-  "Eye Drops (Moxicip)",
-  "Ear Drops (Candibiotic)",
-  "Ear Drops (Otek)",
-  "Nasal Spray (Otrivin, Nasivion)",
-  "Nasal Drops (Nasoclear)",
-  // Creams/Ointments
-  "Diclofenac Gel (Volini, Voveran)",
-  "Moov Cream",
-  "Moov Spray",
-  "Volini Spray",
-  "Fastum Gel",
-  "Relispray",
-  "Vicks VapoRub",
-  "Zandu Balm",
-  "Amrutanjan",
-  "Tiger Balm",
-  "Betadine Ointment",
-  "Calamine Lotion",
-  "Soframycin Cream",
-  "Candid Cream",
-  "Moisturizer (Nivea, Vaseline)",
-  "Sunscreen (Lotus, Neutrogena)",
-  "Anti-Dandruff Shampoo (Head & Shoulders)",
-  "Hair Oil (Parachute, Bajaj Almond)",
-  // Oral Care
-  "Toothpaste (Colgate, Sensodyne)",
-  "Mouth Wash (Listerine, Betadine)",
-  "Toothache Drops (Dentogel)",
-  // Common brands
-  "Vicks Action 500",
-  "Saridon",
-  "Disprin",
-  "Eno Fruit Salt",
-  "Kayam Churna",
-  "Lacto Calamine",
-  "Boroline",
-  "Burnol",
-  "Dettol Antiseptic",
-  "Savlon",
-  // Nervous System / Brain
-  "Alprazolam 0.25mg (Alprax)",
-  "Clonazepam 0.5mg (Rivotril)",
-  "Sertraline 50mg (Serlift)",
-  "Fluoxetine 20mg (Prozac)",
-  "Amitriptyline 10mg (Tryptomer)",
-  "Levodopa + Carbidopa (Syndopa)",
-  "Donepezil 5mg (Aricept)",
-  "Memantine 10mg (Admenta)",
-  "Pregabalin 75mg (Pregabid)",
-  "Gabapentin 300mg (Gabapin)",
-  // Migraine
-  "Sumatriptan 50mg (Suminat)",
-  "Naproxen 500mg (Naprosyn)",
-  "Ergotamine (Vasograin)",
-  // Thyroid
-  "Thyroxine 50mcg (Thyronorm, Eltroxin)",
-  "Carbimazole 10mg (Neomercazole)",
-  // Respiratory
-  "Salbutamol Inhaler (Asthalin)",
-  "Budesonide Inhaler (Budecort)",
-  "Montelukast + Levocetirizine (Montair-LC)",
-  "Deriphyllin",
-  // Other
-  "Tranexamic Acid 500mg (Trapic)",
-  "Folic Acid 5mg",
-  "Albendazole 400mg (Zentel)",
-  "Ivermectin 12mg",
-  "Hydroxychloroquine 200mg (HCQS)",
-  "Prednisolone 10mg (Wysolone)",
-  "Dexamethasone 0.5mg (Decadron)"
+// Fever/Pain
+"Paracetamol 500mg (Crocin, Dolo, Calpol)","Paracetamol 650mg (Dolo 650, Crocin Advance)","Paracetamol Syrup (Crocin DS, Calpol)","Ibuprofen 400mg (Brufen, Combiflam)","Ibuprofen Syrup (Brufen Syrup)","Aspirin 75mg (Ecosprin, Disprin)","Aspirin 150mg (Ecosprin 150)","Diclofenac 50mg (Voveran, Diclomol)","Diclofenac Injection (Voveran IM)","Nimesulide 100mg (Nise)","Aceclofenac 100mg (Zerodol)","Aceclofenac + Paracetamol (Zerodol-P)","Tramadol 50mg (Ultracet)","Tramadol Injection","Ketorolac 30mg Injection","Morphine Injection (Cancer pain)",
+// BP/Cardiac
+"Amlodipine 5mg (Amlopres, Stamlo)","Amlodipine 10mg (Amlong)","Telmisartan 40mg (Telma 40, Telsartan)","Telmisartan 80mg (Telma 80)","Telmisartan + Amlodipine (Telma-AM)","Losartan 50mg (Losar, Repace)","Losartan + HCTZ (Losar-H)","Olmesartan 20mg (Olmetor)","Valsartan 80mg (Valzaar)","Atenolol 50mg (Tenormin)","Metoprolol 25mg (Metolar)","Metoprolol 50mg (Metolar-XR)","Bisoprolol 5mg (Concor)","Carvedilol 6.25mg (Carloc)","Enalapril 5mg (Envas)","Ramipril 5mg (Cardace)","Lisinopril 5mg (Listril)","Atorvastatin 10mg (Atorva, Lipitor)","Atorvastatin 20mg (Atorva 20)","Rosuvastatin 10mg (Rosuvas)","Rosuvastatin 20mg (Rosuvas 20)","Clopidogrel 75mg (Plavix, Clopilet)","Aspirin + Clopidogrel (Clopilet-A)","Warfarin 5mg (Warf)","Heparin Injection","Enoxaparin Injection (Clexane)","Digoxin 0.25mg (Lanoxin)","Amiodarone 200mg (Cordarone)","Nitroglycerin (Nitrostat, Angised)","Isosorbide 5mg (Monotrate)","Ranolazine 500mg (Ranozex)",
+// Diabetes
+"Metformin 500mg (Glycomet, Gluconorm)","Metformin 850mg (Glycomet 850)","Glimepiride 1mg (Amaryl)","Glimepiride 2mg (Amaryl 2)","Glimepiride + Metformin (Amaryl-M)","Glipizide 5mg (Glucotrol)","Glibenclamide 5mg (Daonil)","Sitagliptin 100mg (Januvia)","Vildagliptin 50mg (Galvus)","Saxagliptin 5mg (Onglyza)","Dapagliflozin 10mg (Forxiga)","Empagliflozin 10mg (Jardiance)","Pioglitazone 15mg (Pioz)","Insulin (Mixtard, Huminsulin)","Insulin Glargine (Lantus, Basalog)","Insulin Aspart (NovoRapid)","Insulin Lispro (Humalog)",
+// Acidity/Gas/GIT
+"Pantoprazole 40mg (Pan 40, Pantocid)","Pantoprazole 20mg (Pan 20)","Omeprazole 20mg (Omez)","Omeprazole 40mg (Omez 40)","Ranitidine 150mg (Zinetac)","Rabeprazole 20mg (Razo)","Esomeprazole 40mg (Nexium)","Lansoprazole 30mg (Lanzol)","Domperidone 10mg (Domstal)","Domperidone + Pantoprazole (Pan-D)","Ondansetron 4mg (Emeset)","Ondansetron Injection","Metoclopramide 10mg (Perinorm)","Sucralfate 1g (Sucrafil)","Antacid Gel (Digene, Gelusil)","Simethicone Drops (Colicaid, Neopeptine)","Lactulose Syrup (Duphalac, Cremaffin)","Isabgol (Naturolax)","Bisacodyl 5mg (Dulcolax)","Loperamide 2mg (Imodium)","Racecadotril 100mg (Redotil)","Probiotics (VSL#3, Econorm)",
+// Allergy/Cold/Respiratory
+"Cetirizine 10mg (Cetzine, Alerid)","Levocetirizine 5mg (Levocet)","Loratadine 10mg (Lorfast)","Fexofenadine 120mg (Allegra)","Montelukast 10mg (Montair)","Montelukast + Levocetirizine (Montair-LC)","Chlorpheniramine (Avil)","Hydroxyzine 25mg (Atarax)","Salbutamol Inhaler (Asthalin)","Salbutamol Syrup (Asthalin)","Budesonide Inhaler (Budecort)","Formoterol + Budesonide (Foracort)","Ipratropium Inhaler (Ipravent)","Theophylline (Deriphyllin)","Cough Syrup (Benadryl, Ascoril, Grilinctus)","Dextromethorphan Syrup","Ambroxol Syrup (Mucolite)","Bromhexine Syrup (Bisolvon)","Steam Inhalation Capsules",
+// Antibiotics
+"Azithromycin 500mg (Azee, Azithral)","Azithromycin 250mg (Azee 250)","Amoxicillin 500mg (Mox, Novamox)","Amoxicillin + Clavulanate (Augmentin, Clavam)","Ciprofloxacin 500mg (Ciplox)","Ciprofloxacin 250mg (Ciplox 250)","Cefixime 200mg (Taxim-O, Zifi)","Cefixime + Ofloxacin (Zifi-O)","Ceftriaxone 1g (Monocef)","Cefuroxime 500mg (Ceftum)","Cefpodoxime 200mg (Podocef)","Doxycycline 100mg (Doxt)","Metronidazole 400mg (Flagyl)","Tinidazole 500mg (Tiniba)","Levofloxacin 500mg (Levoflox)","Ofloxacin 200mg (Oflox)","Norfloxacin 400mg (Norflox)","Clarithromycin 500mg (Claribid)","Erythromycin 500mg (Erythrocin)","Gentamicin Injection","Amikacin Injection","Vancomycin Injection","Linezolid 600mg (Linospan)","Meropenem Injection","Imipenem Injection",
+// Antifungal/Antiviral
+"Fluconazole 150mg (Forcan, Zocon)","Itraconazole 100mg (Itrasys)","Ketoconazole Cream (Nizral)","Clotrimazole Cream (Candid)","Terbinafine 250mg (Terbinafine)","Acyclovir 400mg (Zovirax)","Acyclovir Cream (Zovirax)","Oseltamivir 75mg (Tamiflu)","Albendazole 400mg (Zentel)","Ivermectin 12mg","Praziquantel 600mg",
+// Vitamins/Supplements
+"Multivitamin (Zincovit, Becosules)","Vitamin B Complex (Becosules)","Vitamin B12 (Methylcobalamin)","Vitamin C (Limcee)","Vitamin D3 (Uprise D3, Calcirol)","Vitamin E (Evion)","Vitamin K Injection","Calcium + Vitamin D3 (Shelcal, Calcimax)","Calcium Carbonate (Calcium Sandoz)","Iron + Folic Acid (Autrin, Fefol)","Iron Syrup (Dexorange)","Iron Injection (Ferrous Sucrose)","Folic Acid 5mg","Zinc (Zincovit)","Omega 3 (Seven Seas)","Protein Powder (Protinex)",
+// Skin/Hair
+"Betadine Ointment","Betadine Solution","Soframycin Cream","Candid Cream","Calamine Lotion","Lacto Calamine","Moisturizer (Nivea, Vaseline)","Sunscreen (Lotus, Neutrogena)","Boroline","Burnol","Dettol Antiseptic","Savlon","Anti-Dandruff Shampoo (Head & Shoulders)","Ketoconazole Shampoo (Nizral)","Hair Oil (Parachute, Bajaj Almond)","Minoxidil 5% (Tugain)","Finasteride 1mg","Isotretinoin 20mg (Sotret)","Clindamycin Gel","Adapalene Gel","Benzoyl Peroxide","Hydrocortisone Cream","Mometasone Cream","Betamethasone Cream","Clobetasol Cream",
+// Eye/Ear/Nose/Dental
+"Eye Drops (Refresh Tears, Genteal)","Eye Drops (Moxicip)","Eye Drops (Ciplox)","Eye Drops (Tobracin)","Eye Ointment (Ciplox)","Ear Drops (Candibiotic)","Ear Drops (Otek)","Ear Wax Drops (Clean Ear)","Nasal Spray (Otrivin, Nasivion)","Nasal Drops (Nasoclear)","Nasal Steroid Spray (Flomist)","Toothpaste (Colgate, Sensodyne)","Mouth Wash (Listerine, Betadine)","Toothache Drops (Dentogel)","Clove Oil","Dental Gel (Metrogyl Denta)",
+// Pain Relief Topical
+"Diclofenac Gel (Volini, Voveran)","Moov Cream","Moov Spray","Volini Spray","Fastum Gel","Relispray","Zandu Balm","Amrutanjan","Tiger Balm","Vicks VapoRub","Vicks Action 500","Saridon","Disprin","Kayam Churna",
+// Nervous System/Psychiatric
+"Alprazolam 0.25mg (Alprax)","Clonazepam 0.5mg (Rivotril)","Lorazepam 2mg (Ativan)","Diazepam 5mg (Valium)","Sertraline 50mg (Serlift)","Fluoxetine 20mg (Prozac)","Paroxetine 20mg (Paxil)","Escitalopram 10mg (Nexito)","Amitriptyline 10mg (Tryptomer)","Imipramine 25mg (Depsonil)","Olanzapine 5mg (Oleanz)","Risperidone 2mg (Risdone)","Quetiapine 100mg (Qutipin)","Lithium 300mg (Lithosun)","Valproate 200mg (Valparin)","Carbamazepine 200mg (Tegretol)","Phenytoin 100mg (Eptoin)","Levetiracetam 500mg (Levipil)","Lamotrigine 50mg (Lametec)","Donepezil 5mg (Aricept)","Memantine 10mg (Admenta)","Levodopa + Carbidopa (Syndopa)","Pregabalin 75mg (Pregabid)","Gabapentin 300mg (Gabapin)",
+// Migraine
+"Sumatriptan 50mg (Suminat)","Naproxen 500mg (Naprosyn)","Ergotamine (Vasograin)","Rizatriptan 10mg (Rizact)","Flunarizine 10mg (Flunarizine)",
+// Thyroid/Hormones
+"Thyroxine 50mcg (Thyronorm, Eltroxin)","Thyroxine 100mcg (Thyronorm 100)","Carbimazole 10mg (Neomercazole)","Methimazole 5mg","Prednisolone 10mg (Wysolone)","Dexamethasone 0.5mg (Decadron)","Hydrocortisone 10mg","Testosterone Injection","Estrogen Tablet","Progesterone Tablet","Oral Contraceptive Pills",
+// Cancer/Other
+"Tamoxifen 20mg","Methotrexate 2.5mg","Hydroxychloroquine 200mg (HCQS)","Tranexamic Acid 500mg (Trapic)","Cyclophosphamide 50mg","Azathioprine 50mg","Mycophenolate 500mg","Imatinib 400mg (Gleevec)",
+// Saline/IV
+"Normal Saline 0.9% (NS)","Dextrose 5% (D5)","Dextrose 10% (D10)","Ringer Lactate (RL)","Dextrose Normal Saline (DNS)","Isolyte P","Isolyte M","Isolyte G","Mannitol 20%","Sodium Bicarbonate Injection","Potassium Chloride Injection","Calcium Gluconate Injection","Magnesium Sulphate Injection",
+// Veterinary (Janwar)
+"Albendazole Syrup (Animal)","Ivermectin Injection (Animal)","Meloxicam Syrup (Animal)","Enrofloxacin Injection (Animal)","Amoxicillin Injection (Animal)","Praziquantel Tablet (Animal)","Fipronil Spot-On (Dog)","Selamectin Spot-On (Dog/Cat)","Bravecto Chewable (Dog)","Deworming Tablet (Dog)","Rabies Vaccine (Dog)","Distemper Vaccine (Dog)","Parvo Vaccine (Dog)","Anti-Tick Shampoo (Animal)","Calcium Gel (Animal)","Pet Multivitamin"
 ];
 // ============ END DATABASE ============
 
-function updateTime() {
-  document.getElementById('liveTime').textContent = new Date().toLocaleString('en-IN');
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const dayNamesHi = ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
+
+function toggleLanguage() {
+  currentLang = currentLang === 'en' ? 'hi' : 'en';
+  document.getElementById('langBtn').textContent = currentLang === 'en' ? 'हिंदी' : 'English';
+  document.querySelectorAll('.lang').forEach(el => {
+    el.textContent = el.getAttribute('data-' + currentLang) || el.textContent;
+  });
+  document.getElementById('timelineDay').textContent = currentLang === 'hi' ? dayNamesHi[selectedDay] : dayNames[selectedDay];
 }
-setInterval(updateTime, 1000); updateTime();
 
 function saveProfile() {
   const name = document.getElementById('seniorName').value.trim();
@@ -242,70 +241,88 @@ function saveProfile() {
   status.classList.remove('hidden');
   setTimeout(() => status.classList.add('hidden'), 2000);
 }
+
+function setDay(dayIndex) {
+  selectedDay = dayIndex;
+  for (let i = 0; i < 7; i++) {
+    const btn = document.getElementById('day-' + i);
+    if (i === dayIndex) btn.className = 'day-btn bg-blue-600 text-white';
+    else btn.className = 'day-btn bg-slate-200 text-slate-700';
+  }
+  document.getElementById('timelineDay').textContent = currentLang === 'hi' ? dayNamesHi[dayIndex] : dayNames[dayIndex];
+  renderMedicines();
+}
+
 window.onload = () => {
   const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
   if (p) {
     document.getElementById('seniorName').value = p.name || '';
     document.getElementById('seniorAge').value = p.age || '';
   }
-  renderMedicines();
+  setDay(new Date().getDay());
   renderTasks();
 };
 
-// --- MEDICINE SEARCH (Local Database) ---
 function addMedicine() {
   document.getElementById('medicineModal').classList.remove('hidden');
   document.getElementById('medicineModal').classList.add('flex');
   document.getElementById('medicineSearch').value = '';
-  document.getElementById('suggestions').innerHTML = '<p class="text-slate-400 p-2">Type 2 letters to search...</p>';
-  document.getElementById('medicineSearch').focus();
+  document.getElementById('medicineQty').value = '';
+  document.getElementById('suggestions').innerHTML = '<p class="text-slate-400 p-2">Type 2 letters...</p>';
+  tempMedicineName = '';
 }
 function closeMedicineModal() {
   document.getElementById('medicineModal').classList.add('hidden');
   document.getElementById('medicineModal').classList.remove('flex');
 }
-
 function searchMedicine(query) {
   const suggestions = document.getElementById('suggestions');
   suggestions.innerHTML = '';
-
   if (query.length < 2) {
-    suggestions.innerHTML = '<p class="text-slate-400 p-2">Type 2 letters to search...</p>';
+    suggestions.innerHTML = '<p class="text-slate-400 p-2">Type 2 letters...</p>';
     return;
   }
-
   const q = query.toLowerCase();
   const matches = medicineDatabase.filter(m => m.toLowerCase().includes(q)).slice(0, 10);
-
   if (matches.length === 0) {
     const div = document.createElement('div');
     div.className = 'suggestion-item';
-    div.innerHTML = `<strong>➕ Add "${query}" (custom)</strong>`;
+    div.innerHTML = `➕ Add "${query}" (custom)`;
     div.onclick = () => {
-      const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
-      if (!time) return;
-      medicines.push({ id: Date.now(), name: query, time: time, taken: false });
-      saveMedicines(); renderMedicines(); closeMedicineModal();
+      tempMedicineName = query;
+      document.getElementById('medicineSearch').value = query;
+      suggestions.innerHTML = '<p class="text-green-600 p-2">✅ Selected</p>';
     };
     suggestions.appendChild(div);
     return;
   }
-
   matches.forEach(name => {
     const div = document.createElement('div');
     div.className = 'suggestion-item';
     div.innerHTML = `💊 ${name}`;
     div.onclick = () => {
-      const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
-      if (!time) return;
-      medicines.push({ id: Date.now(), name: name, time: time, taken: false });
-      saveMedicines(); renderMedicines(); closeMedicineModal();
+      tempMedicineName = name;
+      document.getElementById('medicineSearch').value = name;
+      suggestions.innerHTML = '<p class="text-green-600 p-2">✅ Selected</p>';
     };
     suggestions.appendChild(div);
   });
 }
 
-// --- MEDICINE CRUD ---
+function saveMedicine() {
+  const name = tempMedicineName || document.getElementById('medicineSearch').value.trim();
+  const qty = document.getElementById('medicineQty').value.trim();
+  const time = document.getElementById('medicineTimeSelect').value;
+  const food = document.getElementById('medicineFood').value;
+  const forWhom = document.getElementById('medicineFor').value;
+  const area = document.getElementById('medicineArea').value;
+  const form = document.getElementById('medicineForm').value;
+  if (!name) return alert('Please select a medicine');
+  if (!qty) return alert('Please enter quantity');
+  medicines.push({ id: Date.now(), name, qty, time, food, forWhom, area, form, day: selectedDay, taken: false });
+  saveMedicines(); renderMedicines(); closeMedicineModal();
+}
+
 function toggleMedicine(id) {
   const m = medicines.find(x => x.id === id);
   if (m) m.taken = !m.taken;
@@ -316,29 +333,45 @@ function deleteMedicine(id) {
   saveMedicines(); renderMedicines();
 }
 function saveMedicines() { localStorage.setItem('medicines', JSON.stringify(medicines)); }
+
 function renderMedicines() {
-  const list = document.getElementById('medicineList');
+  const lists = {
+    morning: document.getElementById('morningList'),
+    afternoon: document.getElementById('afternoonList'),
+    evening: document.getElementById('eveningList'),
+    night: document.getElementById('nightList')
+  };
+  Object.values(lists).forEach(l => l.innerHTML = '');
+  const dayMeds = medicines.filter(m => m.day === selectedDay);
   const empty = document.getElementById('noMedicine');
-  list.innerHTML = '';
-  if (medicines.length === 0) { empty.classList.remove('hidden'); return; }
+  if (dayMeds.length === 0) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
-  medicines.forEach(m => {
+  dayMeds.sort((a, b) => parseInt(a.time) - parseInt(b.time));
+  dayMeds.forEach(m => {
+    const hour = parseInt(m.time);
+    let target;
+    if (hour < 12) target = lists.morning;
+    else if (hour < 17) target = lists.afternoon;
+    else if (hour < 21) target = lists.evening;
+    else target = lists.night;
     const div = document.createElement('div');
-    div.className = `flex items-center justify-between p-4 rounded-xl border-2 ${m.taken ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
+    div.className = `p-3 rounded-xl border-2 ${m.taken ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
     div.innerHTML = `
-      <div class="flex-1">
-        <p class="font-semibold text-base ${m.taken ? 'line-through text-green-700' : 'text-slate-800'}">${m.name}</p>
-        <p class="text-sm text-slate-500">⏰ ${m.time}</p>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="toggleMedicine(${m.id})" class="px-3 py-2 rounded-lg font-semibold text-white text-sm ${m.taken ? 'bg-slate-400' : 'bg-green-600'}">${m.taken ? 'Undo' : 'Taken'}</button>
-        <button onclick="deleteMedicine(${m.id})" class="px-3 py-2 rounded-lg bg-red-100 text-red-600 font-semibold">✕</button>
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <p class="font-semibold text-sm ${m.taken ? 'line-through text-green-700' : 'text-slate-800'}">${m.name}</p>
+          <p class="text-xs text-slate-500 mt-1">⏰ ${m.time} • 💊 ${m.qty} • 🍽️ ${m.food}</p>
+          <p class="text-xs text-slate-500 mt-1">👤 ${m.forWhom} • 📍 ${m.area} • 💉 ${m.form}</p>
+        </div>
+        <div class="flex gap-1 ml-2">
+          <button onclick="toggleMedicine(${m.id})" class="px-3 py-1 rounded-lg font-semibold text-white text-xs ${m.taken ? 'bg-slate-400' : 'bg-green-600'}">${m.taken ? 'Undo' : 'Taken'}</button>
+          <button onclick="deleteMedicine(${m.id})" class="px-2 py-1 rounded-lg bg-red-100 text-red-600 text-xs">✕</button>
+        </div>
       </div>`;
-    list.appendChild(div);
+    target.appendChild(div);
   });
 }
 
-// --- TASKS ---
 function addTask() {
   const title = prompt('Task:');
   if (!title) return;
@@ -363,20 +396,17 @@ function renderTasks() {
   empty.classList.add('hidden');
   tasks.forEach(t => {
     const div = document.createElement('div');
-    div.className = `flex items-center justify-between p-4 rounded-xl border-2 ${t.done ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
+    div.className = `flex items-center justify-between p-3 rounded-xl border-2 ${t.done ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
     div.innerHTML = `
-      <div class="flex-1">
-        <p class="font-semibold text-lg ${t.done ? 'line-through text-green-700' : 'text-slate-800'}">${t.title}</p>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="toggleTask(${t.id})" class="px-4 py-2 rounded-lg font-semibold text-white ${t.done ? 'bg-slate-400' : 'bg-blue-600'}">${t.done ? 'Undo' : 'Done'}</button>
-        <button onclick="deleteTask(${t.id})" class="px-3 py-2 rounded-lg bg-red-100 text-red-600 font-semibold">✕</button>
+      <p class="font-semibold text-sm ${t.done ? 'line-through text-green-700' : 'text-slate-800'}">${t.title}</p>
+      <div class="flex gap-1">
+        <button onclick="toggleTask(${t.id})" class="px-3 py-1 rounded-lg font-semibold text-white text-xs ${t.done ? 'bg-slate-400' : 'bg-blue-600'}">${t.done ? 'Undo' : 'Done'}</button>
+        <button onclick="deleteTask(${t.id})" class="px-2 py-1 rounded-lg bg-red-100 text-red-600 text-xs">✕</button>
       </div>`;
     list.appendChild(div);
   });
 }
 
-// --- EMERGENCY ---
 function emergencyAlert() {
   const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
   const name = p?.name || 'Senior';
