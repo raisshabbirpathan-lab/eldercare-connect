@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderCare Connect - Simple Care Management</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  body { background: #f0f4f8; color: #1e293b; }
+  .btn-large { min-height: 60px; font-size: 18px; font-weight: 600; }
+  .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="bg-blue-600 text-white py-4 px-4 shadow-md sticky top-0 z-50">
+  <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <h1 class="text-xl md:text-2xl font-bold">🏥 ElderCare Connect</h1>
+    <span id="liveTime" class="text-sm hidden md:block"></span>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+
+  <button onclick="emergencyAlert()" class="w-full bg-red-500 hover:bg-red-600 text-white btn-large rounded-2xl shadow-lg transition">
+    🚨 EMERGENCY - Alert Family
+  </button>
+
+  <div class="card">
+    <h2 class="text-lg font-bold mb-4 text-slate-800">👤 Senior Profile</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <input id="seniorName" type="text" placeholder="Senior's Name" class="border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none">
+      <input id="seniorAge" type="number" placeholder="Age" class="border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none">
+    </div>
+    <button onclick="saveProfile()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">Save Profile</button>
+    <p id="profileStatus" class="mt-2 text-sm text-green-600 hidden">✅ Profile saved!</p>
+  </div>
+
+  <div class="card">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-bold text-slate-800">💊 Today's Medicines</h2>
+      <button onclick="addMedicine()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Add</button>
+    </div>
+    <div id="medicineList" class="space-y-3"></div>
+    <p id="noMedicine" class="text-slate-400 text-center py-4">No medicines added yet.</p>
+  </div>
+
+  <div class="card">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-bold text-slate-800">✅ Caregiver Tasks</h2>
+      <button onclick="addTask()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Add</button>
+    </div>
+    <div id="taskList" class="space-y-3"></div>
+    <p id="noTask" class="text-slate-400 text-center py-4">No tasks yet.</p>
+  </div>
+
+</main>
+
+<footer class="text-center text-slate-400 text-sm py-6">
+  © 2026 ElderCare Connect • Made with ❤️ for families
+</footer>
+
+<script>
+let medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+
+function updateTime() {
+  document.getElementById('liveTime').textContent = new Date().toLocaleString('en-IN');
+}
+setInterval(updateTime, 1000); updateTime();
+
+function saveProfile() {
+  const name = document.getElementById('seniorName').value.trim();
+  const age = document.getElementById('seniorAge').value.trim();
+  if (!name) return alert('Please enter name');
+  localStorage.setItem('seniorProfile', JSON.stringify({ name, age }));
+  const status = document.getElementById('profileStatus');
+  status.classList.remove('hidden');
+  setTimeout(() => status.classList.add('hidden'), 2000);
+}
+window.onload = () => {
+  const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
+  if (p) {
+    document.getElementById('seniorName').value = p.name || '';
+    document.getElementById('seniorAge').value = p.age || '';
+  }
+  renderMedicines();
+  renderTasks();
+};
+
+function addMedicine() {
+  const name = prompt('Medicine name:');
+  if (!name) return;
+  const time = prompt('Time (e.g., 09:00 AM):');
+  if (!time) return;
+  medicines.push({ id: Date.now(), name, time, taken: false });
+  saveMedicines(); renderMedicines();
+}
+function toggleMedicine(id) {
+  const m = medicines.find(x => x.id === id);
+  if (m) m.taken = !m.taken;
+  saveMedicines(); renderMedicines();
+}
+function deleteMedicine(id) {
+  medicines = medicines.filter(x => x.id !== id);
+  saveMedicines(); renderMedicines();
+}
+function saveMedicines() { localStorage.setItem('medicines', JSON.stringify(medicines)); }
+function renderMedicines() {
+  const list = document.getElementById('medicineList');
+  const empty = document.getElementById('noMedicine');
+  list.innerHTML = '';
+  if (medicines.length === 0) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  medicines.forEach(m => {
+    const div = document.createElement('div');
+    div.className = `flex items-center justify-between p-4 rounded-xl border-2 ${m.taken ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
+    div.innerHTML = `
+      <div class="flex-1">
+        <p class="font-semibold text-lg ${m.taken ? 'line-through text-green-700' : 'text-slate-800'}">${m.name}</p>
+        <p class="text-sm text-slate-500">⏰ ${m.time}</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="toggleMedicine(${m.id})" class="px-4 py-2 rounded-lg font-semibold text-white ${m.taken ? 'bg-slate-400' : 'bg-green-600'}">${m.taken ? 'Undo' : 'Taken'}</button>
+        <button onclick="deleteMedicine(${m.id})" class="px-3 py-2 rounded-lg bg-red-100 text-red-600 font-semibold">✕</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function addTask() {
+  const title = prompt('Task:');
+  if (!title) return;
+  tasks.push({ id: Date.now(), title, done: false });
+  saveTasks(); renderTasks();
+}
+function toggleTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (t) t.done = !t.done;
+  saveTasks(); renderTasks();
+}
+function deleteTask(id) {
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks(); renderTasks();
+}
+function saveTasks() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  const empty = document.getElementById('noTask');
+  list.innerHTML = '';
+  if (tasks.length === 0) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  tasks.forEach(t => {
+    const div = document.createElement('div');
+    div.className = `flex items-center justify-between p-4 rounded-xl border-2 ${t.done ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
+    div.innerHTML = `
+      <div class="flex-1">
+        <p class="font-semibold text-lg ${t.done ? 'line-through text-green-700' : 'text-slate-800'}">${t.title}</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="toggleTask(${t.id})" class="px-4 py-2 rounded-lg font-semibold text-white ${t.done ? 'bg-slate-400' : 'bg-blue-600'}">${t.done ? 'Undo' : 'Done'}</button>
+        <button onclick="deleteTask(${t.id})" class="px-3 py-2 rounded-lg bg-red-100 text-red-600 font-semibold">✕</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function emergencyAlert() {
+  const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
+  const name = p?.name || 'Senior';
+  const msg = `🚨 EMERGENCY ALERT!\n\n${name} needs immediate help.\n\nTime: ${new Date().toLocaleString('en-IN')}`;
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+  alert(msg);
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('🚨 EMERGENCY ALERT', { body: `${name} needs help!` });
+  } else if ('Notification' in window) {
+    Notification.requestPermission();
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
+
+</body>
+</html>
