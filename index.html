@@ -19,6 +19,7 @@
   .form-label { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px; display: block; margin-top: 14px; }
   .form-input { width: 100%; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 15px; outline: none; }
   .form-input:focus { border-color: #2563eb; }
+  .tab-btn { padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -26,61 +27,93 @@
 <header class="bg-blue-600 text-white py-4 px-4 shadow-md sticky top-0 z-40">
   <div class="max-w-4xl mx-auto flex justify-between items-center">
     <h1 class="text-lg md:text-2xl font-bold">🏥 ElderCare Connect</h1>
-    <button onclick="toggleLanguage()" id="langBtn" class="text-xs bg-white/20 px-3 py-1 rounded-lg font-semibold">हिंदी</button>
+    <div class="flex gap-2">
+      <button onclick="enableNotifications()" class="text-xs bg-white/20 px-3 py-1 rounded-lg font-semibold">🔔</button>
+      <button onclick="toggleLanguage()" id="langBtn" class="text-xs bg-white/20 px-3 py-1 rounded-lg font-semibold">हिंदी</button>
+    </div>
   </div>
 </header>
 
 <main class="max-w-4xl mx-auto px-4 py-6 space-y-5">
 
-  <button onclick="emergencyAlert()" class="w-full bg-red-500 hover:bg-red-600 text-white btn-large rounded-2xl shadow-lg transition">
-    🚨 <span class="lang" data-en="EMERGENCY - Alert Family" data-hi="आपातकाल - परिवार को सूचित करें">EMERGENCY - Alert Family</span>
+  <button onclick="emergencyAlert()" class="w-full bg-red-500 hover:bg-red-600 text-white btn-large rounded-2xl shadow-lg">
+    🚨 EMERGENCY - Alert Family
   </button>
 
   <div class="card">
-    <h2 class="text-lg font-bold mb-4 text-slate-800">👤 <span class="lang" data-en="Senior Profile" data-hi="वरिष्ठ प्रोफ़ाइल">Senior Profile</span></h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <input id="seniorName" type="text" placeholder="Senior's Name" class="form-input">
-      <input id="seniorAge" type="number" placeholder="Age" class="form-input">
+    <div class="flex gap-2 flex-wrap mb-4">
+      <button onclick="showTab('meds')" id="tab-meds" class="tab-btn bg-blue-600 text-white">💊 Medicines</button>
+      <button onclick="showTab('history')" id="tab-history" class="tab-btn bg-slate-200 text-slate-700">📜 History</button>
+      <button onclick="showTab('vitals')" id="tab-vitals" class="tab-btn bg-slate-200 text-slate-700">❤️ Vitals</button>
+      <button onclick="showTab('doctor')" id="tab-doctor" class="tab-btn bg-slate-200 text-slate-700">👨‍⚕️ Doctor</button>
     </div>
-    <button onclick="saveProfile()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">Save Profile</button>
-    <p id="profileStatus" class="mt-2 text-sm text-green-600 hidden">✅ Profile saved!</p>
-  </div>
 
-  <div class="card">
-    <h2 class="text-lg font-bold mb-4 text-slate-800">📅 <span class="lang" data-en="Week View" data-hi="सप्ताह दृश्य">Week View</span></h2>
-    <div class="grid grid-cols-7 gap-1">
-      <button onclick="setDay(0)" id="day-0" class="day-btn">Sun</button>
-      <button onclick="setDay(1)" id="day-1" class="day-btn">Mon</button>
-      <button onclick="setDay(2)" id="day-2" class="day-btn">Tue</button>
-      <button onclick="setDay(3)" id="day-3" class="day-btn">Wed</button>
-      <button onclick="setDay(4)" id="day-4" class="day-btn">Thu</button>
-      <button onclick="setDay(5)" id="day-5" class="day-btn">Fri</button>
-      <button onclick="setDay(6)" id="day-6" class="day-btn">Sat</button>
+    <div id="content-meds">
+      <div class="mb-4">
+        <label class="form-label">Senior Name</label>
+        <input id="seniorName" type="text" placeholder="Name" class="form-input">
+      </div>
+      <h2 class="text-lg font-bold text-slate-800 mb-3">📅 Week View</h2>
+      <div class="grid grid-cols-7 gap-1 mb-4">
+        <button onclick="setDay(0)" id="day-0" class="day-btn">Sun</button>
+        <button onclick="setDay(1)" id="day-1" class="day-btn">Mon</button>
+        <button onclick="setDay(2)" id="day-2" class="day-btn">Tue</button>
+        <button onclick="setDay(3)" id="day-3" class="day-btn">Wed</button>
+        <button onclick="setDay(4)" id="day-4" class="day-btn">Thu</button>
+        <button onclick="setDay(5)" id="day-5" class="day-btn">Fri</button>
+        <button onclick="setDay(6)" id="day-6" class="day-btn">Sat</button>
+      </div>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-slate-800">💊 <span id="timelineDay">Sunday</span></h2>
+        <button onclick="addMedicine()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Add</button>
+      </div>
+      <div class="space-y-4">
+        <div><h3 class="text-sm font-bold text-orange-600 mb-2">🌅 Morning</h3><div id="morningList" class="space-y-2"></div></div>
+        <div><h3 class="text-sm font-bold text-yellow-600 mb-2">☀️ Afternoon</h3><div id="afternoonList" class="space-y-2"></div></div>
+        <div><h3 class="text-sm font-bold text-purple-600 mb-2">🌆 Evening</h3><div id="eveningList" class="space-y-2"></div></div>
+        <div><h3 class="text-sm font-bold text-indigo-600 mb-2">🌙 Night</h3><div id="nightList" class="space-y-2"></div></div>
+      </div>
+      <p id="noMedicine" class="text-slate-400 text-center py-4">No medicines added yet.</p>
+    </div>
+
+    <div id="content-history" class="hidden">
+      <h2 class="text-lg font-bold mb-4">📜 Medicine History</h2>
+      <div id="historyList" class="space-y-2"></div>
+      <p id="noHistory" class="text-slate-400 text-center py-4">No history yet.</p>
+      <button onclick="clearHistory()" class="mt-4 w-full bg-red-100 text-red-600 font-semibold py-3 rounded-lg">Clear History</button>
+    </div>
+
+    <div id="content-vitals" class="hidden">
+      <h2 class="text-lg font-bold mb-4">❤️ Health Vitals</h2>
+      <div class="grid grid-cols-3 gap-2">
+        <input id="vitalBP" placeholder="BP (120/80)" class="form-input text-sm">
+        <input id="vitalSugar" placeholder="Sugar" class="form-input text-sm">
+        <input id="vitalWeight" placeholder="Weight (kg)" class="form-input text-sm">
+      </div>
+      <button onclick="saveVitals()" class="mt-3 w-full bg-blue-600 text-white font-semibold py-3 rounded-lg">Save Vitals</button>
+      <div id="vitalsList" class="mt-4 space-y-2"></div>
+    </div>
+
+    <div id="content-doctor" class="hidden">
+      <h2 class="text-lg font-bold mb-4">👨‍⚕️ Doctor Appointments</h2>
+      <button onclick="addAppointment()" class="w-full bg-green-600 text-white font-semibold py-3 rounded-lg mb-3">+ Add Appointment</button>
+      <div id="appointmentList" class="space-y-2"></div>
+      <p id="noAppointment" class="text-slate-400 text-center py-4">No appointments yet.</p>
     </div>
   </div>
 
   <div class="card">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-bold text-slate-800">💊 <span class="lang" data-en="Medicines" data-hi="दवाइयाँ">Medicines</span> - <span id="timelineDay">Sunday</span></h2>
-      <button onclick="addMedicine()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Add</button>
-    </div>
-    <div class="space-y-4">
-      <div><h3 class="text-sm font-bold text-orange-600 mb-2">🌅 Morning</h3><div id="morningList" class="space-y-2"></div></div>
-      <div><h3 class="text-sm font-bold text-yellow-600 mb-2">☀️ Afternoon</h3><div id="afternoonList" class="space-y-2"></div></div>
-      <div><h3 class="text-sm font-bold text-purple-600 mb-2">🌆 Evening</h3><div id="eveningList" class="space-y-2"></div></div>
-      <div><h3 class="text-sm font-bold text-indigo-600 mb-2">🌙 Night</h3><div id="nightList" class="space-y-2"></div></div>
-    </div>
-    <p id="noMedicine" class="text-slate-400 text-center py-4">No medicines added yet.</p>
-  </div>
-
-  <div class="card">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-bold text-slate-800">✅ <span class="lang" data-en="Caregiver Tasks" data-hi="देखभाल कार्य">Caregiver Tasks</span></h2>
+      <h2 class="text-lg font-bold text-slate-800">✅ Caregiver Tasks</h2>
       <button onclick="addTask()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Add</button>
     </div>
     <div id="taskList" class="space-y-3"></div>
     <p id="noTask" class="text-slate-400 text-center py-4">No tasks yet.</p>
   </div>
+
+  <button onclick="shareReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 rounded-lg">
+    📄 Share Report with Doctor
+  </button>
 
 </main>
 
@@ -90,86 +123,63 @@
 
 <div id="medicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 w-full max-w-md max-h-screen overflow-y-auto">
-    <h3 class="text-lg font-bold mb-2">💊 <span class="lang" data-en="Add Medicine" data-hi="दवा जोड़ें">Add Medicine</span></h3>
+    <h3 class="text-lg font-bold mb-2">💊 Add Medicine</h3>
+    <label class="form-label">Medicine</label>
+    <input id="medicineSearch" type="text" placeholder="Type 2 letters..." class="form-input" oninput="searchMedicine(this.value)">
+    <div id="suggestions" class="mt-2 max-h-32 overflow-y-auto border border-slate-200 rounded-lg"></div>
 
-    <label class="form-label">Medicine Name</label>
-    <input id="medicineSearch" type="text" placeholder="Type 2 letters (e.g., Para, Vicks)" class="form-input" oninput="searchMedicine(this.value)">
-    <div id="suggestions" class="mt-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg"></div>
-
-    <label class="form-label">Kiske Liye / For Whom</label>
+    <label class="form-label">Kiske Liye</label>
     <select id="medicineFor" class="form-input">
-      <option value="Buzurg (Senior)">Buzurg (Senior)</option>
-      <option value="Bada (Adult)">Bada (Adult)</option>
-      <option value="Bacha (Child)">Bacha (Child)</option>
-      <option value="Purush (Male)">Purush (Male)</option>
-      <option value="Mahila (Female)">Mahila (Female)</option>
-      <option value="Janwar (Animal)">Janwar (Animal)</option>
+      <option>Buzurg (Senior)</option><option>Bada (Adult)</option><option>Bacha (Child)</option>
+      <option>Purush (Male)</option><option>Mahila (Female)</option><option>Pregnant Mahila</option>
+      <option>Nursing Mother</option><option>6 Mahine ka Bacha</option><option>Janwar (Animal)</option>
     </select>
 
     <label class="form-label">Application Area</label>
     <select id="medicineArea" class="form-input">
-      <option value="Muh se (Oral)">Muh se (Oral)</option>
-      <option value="Aankh (Eye)">Aankh (Eye)</option>
-      <option value="Kaan (Ear)">Kaan (Ear)</option>
-      <option value="Naak (Nose)">Naak (Nose)</option>
-      <option value="Daant (Teeth)">Daant (Teeth)</option>
-      <option value="Kamar (Back)">Kamar (Back)</option>
-      <option value="Gardan (Neck)">Gardan (Neck)</option>
-      <option value="Haath (Hands)">Haath (Hands)</option>
-      <option value="Pair (Feet)">Pair (Feet)</option>
-      <option value="Baal (Hair)">Baal (Hair)</option>
-      <option value="Skin (Twacha)">Skin (Twacha)</option>
-      <option value="Nakhun (Nails)">Nakhun (Nails)</option>
-      <option value="Injection">Injection</option>
-      <option value="Saline (Drip)">Saline (Drip)</option>
+      <option>Muh se (Oral)</option><option>Aankh (Eye)</option><option>Kaan (Ear)</option>
+      <option>Naak (Nose)</option><option>Daant (Teeth)</option><option>Muh ke andar</option>
+      <option>Kamar (Back)</option><option>Gardan (Neck)</option><option>Haath (Hands)</option>
+      <option>Pair (Feet)</option><option>Nakhun (Nails)</option><option>Baal (Hair)</option>
+      <option>Skin (Twacha)</option><option>Naabhi (Navel)</option><option>Private Parts</option>
+      <option>Guda (Rectal)</option><option>Injection</option><option>Saline (Drip)</option>
     </select>
 
-    <label class="form-label">Form / कैसी दवा है</label>
+    <label class="form-label">Form</label>
     <select id="medicineForm" class="form-input">
-      <option value="Tablet (Chabane wali)">Tablet (Chabane wali)</option>
-      <option value="Capsule">Capsule</option>
-      <option value="Syrup (Peene wali)">Syrup (Peene wali)</option>
-      <option value="Drop">Drop</option>
-      <option value="Injection">Injection</option>
-      <option value="Saline">Saline</option>
-      <option value="Cream (Lagane wali)">Cream (Lagane wali)</option>
-      <option value="Ointment">Ointment</option>
-      <option value="Gel">Gel</option>
-      <option value="Spray">Spray</option>
-      <option value="Inhaler (Sungne wali)">Inhaler (Sungne wali)</option>
-      <option value="Powder">Powder</option>
-      <option value="Lotion">Lotion</option>
+      <option>Tablet</option><option>Capsule</option><option>Syrup</option><option>Drop</option>
+      <option>Injection</option><option>Saline</option><option>Cream</option><option>Ointment</option>
+      <option>Gel</option><option>Spray</option><option>Inhaler</option><option>Powder</option>
+      <option>Lotion</option><option>Suppository</option><option>Patch</option><option>Sachet</option>
+      <option>Vaccine</option><option>Nebulizer Solution</option>
     </select>
 
-    <label class="form-label">Quantity / कितनी लेनी है</label>
-    <input id="medicineQty" type="text" placeholder="e.g., 1 tablet, 5ml, 2 drops" class="form-input">
+    <label class="form-label">Quantity</label>
+    <div class="grid grid-cols-2 gap-2">
+      <input id="medicineQtyNum" type="number" placeholder="1" class="form-input">
+      <select id="medicineQtyUnit" class="form-input">
+        <option>Tablet</option><option>ml</option><option>Drops</option><option>Capsule</option>
+        <option>Spoon</option><option>Puff</option><option>Sachet</option><option>Unit</option>
+      </select>
+    </div>
 
     <label class="form-label">Time</label>
     <select id="medicineTimeSelect" class="form-input">
-      <option value="07:00">7:00 AM</option>
-      <option value="08:00">8:00 AM</option>
-      <option value="09:00">9:00 AM</option>
-      <option value="12:00">12:00 PM</option>
-      <option value="14:00">2:00 PM</option>
-      <option value="16:00">4:00 PM</option>
-      <option value="18:00">6:00 PM</option>
-      <option value="20:00">8:00 PM</option>
-      <option value="21:00">9:00 PM</option>
+      <option value="07:00">7:00 AM</option><option value="08:00">8:00 AM</option><option value="09:00">9:00 AM</option>
+      <option value="12:00">12:00 PM</option><option value="14:00">2:00 PM</option><option value="16:00">4:00 PM</option>
+      <option value="18:00">6:00 PM</option><option value="20:00">8:00 PM</option><option value="21:00">9:00 PM</option>
       <option value="22:00">10:00 PM</option>
     </select>
 
     <label class="form-label">Before / After Food</label>
     <select id="medicineFood" class="form-input">
-      <option value="Before Food">Before Food (Khane se pehle)</option>
-      <option value="After Food">After Food (Khane ke baad)</option>
-      <option value="With Food">With Food (Khane ke saath)</option>
-      <option value="Empty Stomach">Empty Stomach (Khali pet)</option>
-      <option value="Not Applicable">Not Applicable</option>
+      <option>Before Food</option><option>After Food</option><option>With Food</option>
+      <option>Empty Stomach</option><option>Not Applicable</option>
     </select>
 
     <div class="flex gap-2 mt-5">
-      <button onclick="saveMedicine()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Save</button>
-      <button onclick="closeMedicineModal()" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-700 font-semibold py-3 rounded-lg">Cancel</button>
+      <button onclick="saveMedicine()" class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg">Save</button>
+      <button onclick="closeMedicineModal()" class="flex-1 bg-slate-300 text-slate-700 font-semibold py-3 rounded-lg">Cancel</button>
     </div>
   </div>
 </div>
@@ -177,88 +187,61 @@
 <script>
 let medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
 let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+let history = JSON.parse(localStorage.getItem('history') || '[]');
+let vitals = JSON.parse(localStorage.getItem('vitals') || '[]');
+let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
 let selectedDay = new Date().getDay();
 let tempMedicineName = '';
-let currentLang = 'en';
+let medicineDatabase = [];
 
-// ============ INDIA MEDICINE DATABASE (500+) ============
-const medicineDatabase = [
-// Fever/Pain
-"Paracetamol 500mg (Crocin, Dolo, Calpol)","Paracetamol 650mg (Dolo 650, Crocin Advance)","Paracetamol Syrup (Crocin DS, Calpol)","Ibuprofen 400mg (Brufen, Combiflam)","Ibuprofen Syrup (Brufen Syrup)","Aspirin 75mg (Ecosprin, Disprin)","Aspirin 150mg (Ecosprin 150)","Diclofenac 50mg (Voveran, Diclomol)","Diclofenac Injection (Voveran IM)","Nimesulide 100mg (Nise)","Aceclofenac 100mg (Zerodol)","Aceclofenac + Paracetamol (Zerodol-P)","Tramadol 50mg (Ultracet)","Tramadol Injection","Ketorolac 30mg Injection","Morphine Injection (Cancer pain)",
-// BP/Cardiac
-"Amlodipine 5mg (Amlopres, Stamlo)","Amlodipine 10mg (Amlong)","Telmisartan 40mg (Telma 40, Telsartan)","Telmisartan 80mg (Telma 80)","Telmisartan + Amlodipine (Telma-AM)","Losartan 50mg (Losar, Repace)","Losartan + HCTZ (Losar-H)","Olmesartan 20mg (Olmetor)","Valsartan 80mg (Valzaar)","Atenolol 50mg (Tenormin)","Metoprolol 25mg (Metolar)","Metoprolol 50mg (Metolar-XR)","Bisoprolol 5mg (Concor)","Carvedilol 6.25mg (Carloc)","Enalapril 5mg (Envas)","Ramipril 5mg (Cardace)","Lisinopril 5mg (Listril)","Atorvastatin 10mg (Atorva, Lipitor)","Atorvastatin 20mg (Atorva 20)","Rosuvastatin 10mg (Rosuvas)","Rosuvastatin 20mg (Rosuvas 20)","Clopidogrel 75mg (Plavix, Clopilet)","Aspirin + Clopidogrel (Clopilet-A)","Warfarin 5mg (Warf)","Heparin Injection","Enoxaparin Injection (Clexane)","Digoxin 0.25mg (Lanoxin)","Amiodarone 200mg (Cordarone)","Nitroglycerin (Nitrostat, Angised)","Isosorbide 5mg (Monotrate)","Ranolazine 500mg (Ranozex)",
-// Diabetes
-"Metformin 500mg (Glycomet, Gluconorm)","Metformin 850mg (Glycomet 850)","Glimepiride 1mg (Amaryl)","Glimepiride 2mg (Amaryl 2)","Glimepiride + Metformin (Amaryl-M)","Glipizide 5mg (Glucotrol)","Glibenclamide 5mg (Daonil)","Sitagliptin 100mg (Januvia)","Vildagliptin 50mg (Galvus)","Saxagliptin 5mg (Onglyza)","Dapagliflozin 10mg (Forxiga)","Empagliflozin 10mg (Jardiance)","Pioglitazone 15mg (Pioz)","Insulin (Mixtard, Huminsulin)","Insulin Glargine (Lantus, Basalog)","Insulin Aspart (NovoRapid)","Insulin Lispro (Humalog)",
-// Acidity/Gas/GIT
-"Pantoprazole 40mg (Pan 40, Pantocid)","Pantoprazole 20mg (Pan 20)","Omeprazole 20mg (Omez)","Omeprazole 40mg (Omez 40)","Ranitidine 150mg (Zinetac)","Rabeprazole 20mg (Razo)","Esomeprazole 40mg (Nexium)","Lansoprazole 30mg (Lanzol)","Domperidone 10mg (Domstal)","Domperidone + Pantoprazole (Pan-D)","Ondansetron 4mg (Emeset)","Ondansetron Injection","Metoclopramide 10mg (Perinorm)","Sucralfate 1g (Sucrafil)","Antacid Gel (Digene, Gelusil)","Simethicone Drops (Colicaid, Neopeptine)","Lactulose Syrup (Duphalac, Cremaffin)","Isabgol (Naturolax)","Bisacodyl 5mg (Dulcolax)","Loperamide 2mg (Imodium)","Racecadotril 100mg (Redotil)","Probiotics (VSL#3, Econorm)",
-// Allergy/Cold/Respiratory
-"Cetirizine 10mg (Cetzine, Alerid)","Levocetirizine 5mg (Levocet)","Loratadine 10mg (Lorfast)","Fexofenadine 120mg (Allegra)","Montelukast 10mg (Montair)","Montelukast + Levocetirizine (Montair-LC)","Chlorpheniramine (Avil)","Hydroxyzine 25mg (Atarax)","Salbutamol Inhaler (Asthalin)","Salbutamol Syrup (Asthalin)","Budesonide Inhaler (Budecort)","Formoterol + Budesonide (Foracort)","Ipratropium Inhaler (Ipravent)","Theophylline (Deriphyllin)","Cough Syrup (Benadryl, Ascoril, Grilinctus)","Dextromethorphan Syrup","Ambroxol Syrup (Mucolite)","Bromhexine Syrup (Bisolvon)","Steam Inhalation Capsules",
-// Antibiotics
-"Azithromycin 500mg (Azee, Azithral)","Azithromycin 250mg (Azee 250)","Amoxicillin 500mg (Mox, Novamox)","Amoxicillin + Clavulanate (Augmentin, Clavam)","Ciprofloxacin 500mg (Ciplox)","Ciprofloxacin 250mg (Ciplox 250)","Cefixime 200mg (Taxim-O, Zifi)","Cefixime + Ofloxacin (Zifi-O)","Ceftriaxone 1g (Monocef)","Cefuroxime 500mg (Ceftum)","Cefpodoxime 200mg (Podocef)","Doxycycline 100mg (Doxt)","Metronidazole 400mg (Flagyl)","Tinidazole 500mg (Tiniba)","Levofloxacin 500mg (Levoflox)","Ofloxacin 200mg (Oflox)","Norfloxacin 400mg (Norflox)","Clarithromycin 500mg (Claribid)","Erythromycin 500mg (Erythrocin)","Gentamicin Injection","Amikacin Injection","Vancomycin Injection","Linezolid 600mg (Linospan)","Meropenem Injection","Imipenem Injection",
-// Antifungal/Antiviral
-"Fluconazole 150mg (Forcan, Zocon)","Itraconazole 100mg (Itrasys)","Ketoconazole Cream (Nizral)","Clotrimazole Cream (Candid)","Terbinafine 250mg (Terbinafine)","Acyclovir 400mg (Zovirax)","Acyclovir Cream (Zovirax)","Oseltamivir 75mg (Tamiflu)","Albendazole 400mg (Zentel)","Ivermectin 12mg","Praziquantel 600mg",
-// Vitamins/Supplements
-"Multivitamin (Zincovit, Becosules)","Vitamin B Complex (Becosules)","Vitamin B12 (Methylcobalamin)","Vitamin C (Limcee)","Vitamin D3 (Uprise D3, Calcirol)","Vitamin E (Evion)","Vitamin K Injection","Calcium + Vitamin D3 (Shelcal, Calcimax)","Calcium Carbonate (Calcium Sandoz)","Iron + Folic Acid (Autrin, Fefol)","Iron Syrup (Dexorange)","Iron Injection (Ferrous Sucrose)","Folic Acid 5mg","Zinc (Zincovit)","Omega 3 (Seven Seas)","Protein Powder (Protinex)",
-// Skin/Hair
-"Betadine Ointment","Betadine Solution","Soframycin Cream","Candid Cream","Calamine Lotion","Lacto Calamine","Moisturizer (Nivea, Vaseline)","Sunscreen (Lotus, Neutrogena)","Boroline","Burnol","Dettol Antiseptic","Savlon","Anti-Dandruff Shampoo (Head & Shoulders)","Ketoconazole Shampoo (Nizral)","Hair Oil (Parachute, Bajaj Almond)","Minoxidil 5% (Tugain)","Finasteride 1mg","Isotretinoin 20mg (Sotret)","Clindamycin Gel","Adapalene Gel","Benzoyl Peroxide","Hydrocortisone Cream","Mometasone Cream","Betamethasone Cream","Clobetasol Cream",
-// Eye/Ear/Nose/Dental
-"Eye Drops (Refresh Tears, Genteal)","Eye Drops (Moxicip)","Eye Drops (Ciplox)","Eye Drops (Tobracin)","Eye Ointment (Ciplox)","Ear Drops (Candibiotic)","Ear Drops (Otek)","Ear Wax Drops (Clean Ear)","Nasal Spray (Otrivin, Nasivion)","Nasal Drops (Nasoclear)","Nasal Steroid Spray (Flomist)","Toothpaste (Colgate, Sensodyne)","Mouth Wash (Listerine, Betadine)","Toothache Drops (Dentogel)","Clove Oil","Dental Gel (Metrogyl Denta)",
-// Pain Relief Topical
-"Diclofenac Gel (Volini, Voveran)","Moov Cream","Moov Spray","Volini Spray","Fastum Gel","Relispray","Zandu Balm","Amrutanjan","Tiger Balm","Vicks VapoRub","Vicks Action 500","Saridon","Disprin","Kayam Churna",
-// Nervous System/Psychiatric
-"Alprazolam 0.25mg (Alprax)","Clonazepam 0.5mg (Rivotril)","Lorazepam 2mg (Ativan)","Diazepam 5mg (Valium)","Sertraline 50mg (Serlift)","Fluoxetine 20mg (Prozac)","Paroxetine 20mg (Paxil)","Escitalopram 10mg (Nexito)","Amitriptyline 10mg (Tryptomer)","Imipramine 25mg (Depsonil)","Olanzapine 5mg (Oleanz)","Risperidone 2mg (Risdone)","Quetiapine 100mg (Qutipin)","Lithium 300mg (Lithosun)","Valproate 200mg (Valparin)","Carbamazepine 200mg (Tegretol)","Phenytoin 100mg (Eptoin)","Levetiracetam 500mg (Levipil)","Lamotrigine 50mg (Lametec)","Donepezil 5mg (Aricept)","Memantine 10mg (Admenta)","Levodopa + Carbidopa (Syndopa)","Pregabalin 75mg (Pregabid)","Gabapentin 300mg (Gabapin)",
-// Migraine
-"Sumatriptan 50mg (Suminat)","Naproxen 500mg (Naprosyn)","Ergotamine (Vasograin)","Rizatriptan 10mg (Rizact)","Flunarizine 10mg (Flunarizine)",
-// Thyroid/Hormones
-"Thyroxine 50mcg (Thyronorm, Eltroxin)","Thyroxine 100mcg (Thyronorm 100)","Carbimazole 10mg (Neomercazole)","Methimazole 5mg","Prednisolone 10mg (Wysolone)","Dexamethasone 0.5mg (Decadron)","Hydrocortisone 10mg","Testosterone Injection","Estrogen Tablet","Progesterone Tablet","Oral Contraceptive Pills",
-// Cancer/Other
-"Tamoxifen 20mg","Methotrexate 2.5mg","Hydroxychloroquine 200mg (HCQS)","Tranexamic Acid 500mg (Trapic)","Cyclophosphamide 50mg","Azathioprine 50mg","Mycophenolate 500mg","Imatinib 400mg (Gleevec)",
-// Saline/IV
-"Normal Saline 0.9% (NS)","Dextrose 5% (D5)","Dextrose 10% (D10)","Ringer Lactate (RL)","Dextrose Normal Saline (DNS)","Isolyte P","Isolyte M","Isolyte G","Mannitol 20%","Sodium Bicarbonate Injection","Potassium Chloride Injection","Calcium Gluconate Injection","Magnesium Sulphate Injection",
-// Veterinary (Janwar)
-"Albendazole Syrup (Animal)","Ivermectin Injection (Animal)","Meloxicam Syrup (Animal)","Enrofloxacin Injection (Animal)","Amoxicillin Injection (Animal)","Praziquantel Tablet (Animal)","Fipronil Spot-On (Dog)","Selamectin Spot-On (Dog/Cat)","Bravecto Chewable (Dog)","Deworming Tablet (Dog)","Rabies Vaccine (Dog)","Distemper Vaccine (Dog)","Parvo Vaccine (Dog)","Anti-Tick Shampoo (Animal)","Calcium Gel (Animal)","Pet Multivitamin"
-];
-// ============ END DATABASE ============
+// Load medicines from JSON file
+fetch('/medicines.json')
+  .then(r => r.json())
+  .then(d => { medicineDatabase = d.medicines || []; })
+  .catch(e => console.error('Failed to load medicines:', e));
 
-const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const dayNamesHi = ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
+const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 function toggleLanguage() {
-  currentLang = currentLang === 'en' ? 'hi' : 'en';
-  document.getElementById('langBtn').textContent = currentLang === 'en' ? 'हिंदी' : 'English';
-  document.querySelectorAll('.lang').forEach(el => {
-    el.textContent = el.getAttribute('data-' + currentLang) || el.textContent;
+  const btn = document.getElementById('langBtn');
+  btn.textContent = btn.textContent === 'हिंदी' ? 'English' : 'हिंदी';
+}
+
+function showTab(tab) {
+  ['meds','history','vitals','doctor'].forEach(t => {
+    document.getElementById('content-'+t).classList.add('hidden');
+    document.getElementById('tab-'+t).className = 'tab-btn bg-slate-200 text-slate-700';
   });
-  document.getElementById('timelineDay').textContent = currentLang === 'hi' ? dayNamesHi[selectedDay] : dayNames[selectedDay];
+  document.getElementById('content-'+tab).classList.remove('hidden');
+  document.getElementById('tab-'+tab).className = 'tab-btn bg-blue-600 text-white';
+  if (tab === 'history') renderHistory();
+  if (tab === 'vitals') renderVitals();
+  if (tab === 'doctor') renderAppointments();
 }
 
-function saveProfile() {
-  const name = document.getElementById('seniorName').value.trim();
-  const age = document.getElementById('seniorAge').value.trim();
-  if (!name) return alert('Please enter name');
-  localStorage.setItem('seniorProfile', JSON.stringify({ name, age }));
-  const status = document.getElementById('profileStatus');
-  status.classList.remove('hidden');
-  setTimeout(() => status.classList.add('hidden'), 2000);
-}
-
-function setDay(dayIndex) {
-  selectedDay = dayIndex;
-  for (let i = 0; i < 7; i++) {
-    const btn = document.getElementById('day-' + i);
-    if (i === dayIndex) btn.className = 'day-btn bg-blue-600 text-white';
-    else btn.className = 'day-btn bg-slate-200 text-slate-700';
+function enableNotifications() {
+  if ('Notification' in window) {
+    Notification.requestPermission().then(p => {
+      alert(p === 'granted' ? '✅ Notifications enabled!' : '❌ Blocked');
+    });
   }
-  document.getElementById('timelineDay').textContent = currentLang === 'hi' ? dayNamesHi[dayIndex] : dayNames[dayIndex];
+}
+
+function setDay(d) {
+  selectedDay = d;
+  for (let i = 0; i < 7; i++) {
+    document.getElementById('day-'+i).className = i === d ? 'day-btn bg-blue-600 text-white' : 'day-btn bg-slate-200 text-slate-700';
+  }
+  document.getElementById('timelineDay').textContent = dayNames[d];
   renderMedicines();
 }
 
 window.onload = () => {
   const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
-  if (p) {
-    document.getElementById('seniorName').value = p.name || '';
-    document.getElementById('seniorAge').value = p.age || '';
-  }
+  if (p) document.getElementById('seniorName').value = p.name || '';
+  document.getElementById('seniorName').addEventListener('change', e => {
+    localStorage.setItem('seniorProfile', JSON.stringify({ name: e.target.value }));
+  });
   setDay(new Date().getDay());
   renderTasks();
 };
@@ -266,66 +249,58 @@ window.onload = () => {
 function addMedicine() {
   document.getElementById('medicineModal').classList.remove('hidden');
   document.getElementById('medicineModal').classList.add('flex');
-  document.getElementById('medicineSearch').value = '';
-  document.getElementById('medicineQty').value = '';
-  document.getElementById('suggestions').innerHTML = '<p class="text-slate-400 p-2">Type 2 letters...</p>';
   tempMedicineName = '';
+  document.getElementById('suggestions').innerHTML = '';
+  document.getElementById('medicineSearch').value = '';
 }
 function closeMedicineModal() {
   document.getElementById('medicineModal').classList.add('hidden');
   document.getElementById('medicineModal').classList.remove('flex');
 }
-function searchMedicine(query) {
-  const suggestions = document.getElementById('suggestions');
-  suggestions.innerHTML = '';
-  if (query.length < 2) {
-    suggestions.innerHTML = '<p class="text-slate-400 p-2">Type 2 letters...</p>';
-    return;
-  }
-  const q = query.toLowerCase();
-  const matches = medicineDatabase.filter(m => m.toLowerCase().includes(q)).slice(0, 10);
+function searchMedicine(q) {
+  const s = document.getElementById('suggestions');
+  s.innerHTML = '';
+  if (q.length < 2) { s.innerHTML = '<p class="text-slate-400 p-2">Type 2 letters...</p>'; return; }
+  const matches = medicineDatabase.filter(m => m.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
   if (matches.length === 0) {
-    const div = document.createElement('div');
-    div.className = 'suggestion-item';
-    div.innerHTML = `➕ Add "${query}" (custom)`;
-    div.onclick = () => {
-      tempMedicineName = query;
-      document.getElementById('medicineSearch').value = query;
-      suggestions.innerHTML = '<p class="text-green-600 p-2">✅ Selected</p>';
-    };
-    suggestions.appendChild(div);
-    return;
+    const d = document.createElement('div'); d.className = 'suggestion-item';
+    d.textContent = '➕ Add "' + q + '" (custom)';
+    d.onclick = () => { tempMedicineName = q; document.getElementById('medicineSearch').value = q; s.innerHTML = '<p class="text-green-600 p-2">✅</p>'; };
+    s.appendChild(d); return;
   }
-  matches.forEach(name => {
-    const div = document.createElement('div');
-    div.className = 'suggestion-item';
-    div.innerHTML = `💊 ${name}`;
-    div.onclick = () => {
-      tempMedicineName = name;
-      document.getElementById('medicineSearch').value = name;
-      suggestions.innerHTML = '<p class="text-green-600 p-2">✅ Selected</p>';
-    };
-    suggestions.appendChild(div);
+  matches.forEach(m => {
+    const d = document.createElement('div'); d.className = 'suggestion-item';
+    d.textContent = '💊 ' + m;
+    d.onclick = () => { tempMedicineName = m; document.getElementById('medicineSearch').value = m; s.innerHTML = '<p class="text-green-600 p-2">✅</p>'; };
+    s.appendChild(d);
   });
 }
-
 function saveMedicine() {
   const name = tempMedicineName || document.getElementById('medicineSearch').value.trim();
-  const qty = document.getElementById('medicineQty').value.trim();
+  const qtyNum = document.getElementById('medicineQtyNum').value;
+  const qtyUnit = document.getElementById('medicineQtyUnit').value;
   const time = document.getElementById('medicineTimeSelect').value;
-  const food = document.getElementById('medicineFood').value;
-  const forWhom = document.getElementById('medicineFor').value;
-  const area = document.getElementById('medicineArea').value;
-  const form = document.getElementById('medicineForm').value;
-  if (!name) return alert('Please select a medicine');
-  if (!qty) return alert('Please enter quantity');
-  medicines.push({ id: Date.now(), name, qty, time, food, forWhom, area, form, day: selectedDay, taken: false });
+  if (!name) return alert('Select medicine');
+  if (!qtyNum) return alert('Enter quantity');
+  medicines.push({
+    id: Date.now(), name, qty: qtyNum + ' ' + qtyUnit, time,
+    food: document.getElementById('medicineFood').value,
+    forWhom: document.getElementById('medicineFor').value,
+    area: document.getElementById('medicineArea').value,
+    form: document.getElementById('medicineForm').value,
+    day: selectedDay, taken: false
+  });
   saveMedicines(); renderMedicines(); closeMedicineModal();
 }
-
 function toggleMedicine(id) {
   const m = medicines.find(x => x.id === id);
-  if (m) m.taken = !m.taken;
+  if (m) {
+    m.taken = !m.taken;
+    if (m.taken) {
+      history.push({ id: Date.now(), name: m.name, qty: m.qty, takenAt: new Date().toLocaleString('en-IN') });
+      localStorage.setItem('history', JSON.stringify(history));
+    }
+  }
   saveMedicines(); renderMedicines();
 }
 function deleteMedicine(id) {
@@ -333,43 +308,105 @@ function deleteMedicine(id) {
   saveMedicines(); renderMedicines();
 }
 function saveMedicines() { localStorage.setItem('medicines', JSON.stringify(medicines)); }
-
 function renderMedicines() {
   const lists = {
-    morning: document.getElementById('morningList'),
-    afternoon: document.getElementById('afternoonList'),
-    evening: document.getElementById('eveningList'),
-    night: document.getElementById('nightList')
+    morning: document.getElementById('morningList'), afternoon: document.getElementById('afternoonList'),
+    evening: document.getElementById('eveningList'), night: document.getElementById('nightList')
   };
   Object.values(lists).forEach(l => l.innerHTML = '');
   const dayMeds = medicines.filter(m => m.day === selectedDay);
   const empty = document.getElementById('noMedicine');
   if (dayMeds.length === 0) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
-  dayMeds.sort((a, b) => parseInt(a.time) - parseInt(b.time));
+  dayMeds.sort((a,b) => parseInt(a.time) - parseInt(b.time));
   dayMeds.forEach(m => {
-    const hour = parseInt(m.time);
-    let target;
-    if (hour < 12) target = lists.morning;
-    else if (hour < 17) target = lists.afternoon;
-    else if (hour < 21) target = lists.evening;
-    else target = lists.night;
-    const div = document.createElement('div');
-    div.className = `p-3 rounded-xl border-2 ${m.taken ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
-    div.innerHTML = `
-      <div class="flex justify-between items-start">
-        <div class="flex-1">
-          <p class="font-semibold text-sm ${m.taken ? 'line-through text-green-700' : 'text-slate-800'}">${m.name}</p>
-          <p class="text-xs text-slate-500 mt-1">⏰ ${m.time} • 💊 ${m.qty} • 🍽️ ${m.food}</p>
-          <p class="text-xs text-slate-500 mt-1">👤 ${m.forWhom} • 📍 ${m.area} • 💉 ${m.form}</p>
-        </div>
-        <div class="flex gap-1 ml-2">
-          <button onclick="toggleMedicine(${m.id})" class="px-3 py-1 rounded-lg font-semibold text-white text-xs ${m.taken ? 'bg-slate-400' : 'bg-green-600'}">${m.taken ? 'Undo' : 'Taken'}</button>
-          <button onclick="deleteMedicine(${m.id})" class="px-2 py-1 rounded-lg bg-red-100 text-red-600 text-xs">✕</button>
-        </div>
-      </div>`;
-    target.appendChild(div);
+    const h = parseInt(m.time);
+    let target = h < 12 ? lists.morning : h < 17 ? lists.afternoon : h < 21 ? lists.evening : lists.night;
+    const d = document.createElement('div');
+    d.className = 'p-3 rounded-xl border-2 ' + (m.taken ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200');
+    d.innerHTML = '<div class="flex justify-between items-start"><div class="flex-1">' +
+      '<p class="font-semibold text-sm ' + (m.taken ? 'line-through text-green-700' : 'text-slate-800') + '">' + m.name + '</p>' +
+      '<p class="text-xs text-slate-500 mt-1">⏰ ' + m.time + ' • 💊 ' + m.qty + ' • 🍽️ ' + m.food + '</p>' +
+      '<p class="text-xs text-slate-500 mt-1">👤 ' + m.forWhom + ' • 📍 ' + m.area + ' • 💉 ' + m.form + '</p></div>' +
+      '<div class="flex gap-1 ml-2"><button onclick="toggleMedicine(' + m.id + ')" class="px-3 py-1 rounded-lg text-white text-xs ' +
+      (m.taken ? 'bg-slate-400' : 'bg-green-600') + '">' + (m.taken ? 'Undo' : 'Taken') + '</button>' +
+      '<button onclick="deleteMedicine(' + m.id + ')" class="px-2 py-1 rounded-lg bg-red-100 text-red-600 text-xs">✕</button></div></div>';
+    target.appendChild(d);
   });
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const empty = document.getElementById('noHistory');
+  list.innerHTML = '';
+  if (history.length === 0) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  history.slice().reverse().forEach(h => {
+    const d = document.createElement('div');
+    d.className = 'p-3 rounded-xl border-2 bg-green-50 border-green-200';
+    d.innerHTML = '<p class="font-semibold text-sm">' + h.name + '</p><p class="text-xs text-slate-500">💊 ' + h.qty + ' • ✅ ' + h.takenAt + '</p>';
+    list.appendChild(d);
+  });
+}
+function clearHistory() {
+  if (!confirm('Clear all history?')) return;
+  history = []; localStorage.setItem('history', '[]'); renderHistory();
+}
+
+function saveVitals() {
+  const bp = document.getElementById('vitalBP').value.trim();
+  const sugar = document.getElementById('vitalSugar').value.trim();
+  const weight = document.getElementById('vitalWeight').value.trim();
+  if (!bp && !sugar && !weight) return alert('Enter at least one value');
+  vitals.push({ id: Date.now(), bp, sugar, weight, date: new Date().toLocaleString('en-IN') });
+  localStorage.setItem('vitals', JSON.stringify(vitals));
+  document.getElementById('vitalBP').value = ''; document.getElementById('vitalSugar').value = '';
+  document.getElementById('vitalWeight').value = '';
+  renderVitals();
+}
+function renderVitals() {
+  const list = document.getElementById('vitalsList');
+  list.innerHTML = '';
+  vitals.slice().reverse().forEach(v => {
+    const d = document.createElement('div');
+    d.className = 'p-3 rounded-xl border-2 bg-blue-50 border-blue-200';
+    d.innerHTML = '<p class="text-xs text-slate-500">' + v.date + '</p>' +
+      '<p class="font-semibold text-sm mt-1">' + (v.bp ? '🩺 BP: ' + v.bp + ' • ' : '') +
+      (v.sugar ? '🍬 Sugar: ' + v.sugar + ' • ' : '') + (v.weight ? '⚖️ Weight: ' + v.weight : '') + '</p>';
+    list.appendChild(d);
+  });
+}
+
+function addAppointment() {
+  const doctor = prompt('Doctor name:');
+  if (!doctor) return;
+  const date = prompt('Date (e.g., 25 Jan 2026):');
+  if (!date) return;
+  const time = prompt('Time (e.g., 5:00 PM):');
+  if (!time) return;
+  appointments.push({ id: Date.now(), doctor, date, time });
+  localStorage.setItem('appointments', JSON.stringify(appointments));
+  renderAppointments();
+}
+function renderAppointments() {
+  const list = document.getElementById('appointmentList');
+  const empty = document.getElementById('noAppointment');
+  list.innerHTML = '';
+  if (appointments.length === 0) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  appointments.forEach(a => {
+    const d = document.createElement('div');
+    d.className = 'p-3 rounded-xl border-2 bg-purple-50 border-purple-200 flex justify-between items-center';
+    d.innerHTML = '<div><p class="font-semibold text-sm">👨‍⚕️ ' + a.doctor + '</p>' +
+      '<p class="text-xs text-slate-500">📅 ' + a.date + ' • ⏰ ' + a.time + '</p></div>' +
+      '<button onclick="deleteAppointment(' + a.id + ')" class="px-2 py-1 rounded-lg bg-red-100 text-red-600 text-xs">✕</button>';
+    list.appendChild(d);
+  });
+}
+function deleteAppointment(id) {
+  appointments = appointments.filter(x => x.id !== id);
+  localStorage.setItem('appointments', JSON.stringify(appointments));
+  renderAppointments();
 }
 
 function addTask() {
@@ -379,13 +416,11 @@ function addTask() {
   saveTasks(); renderTasks();
 }
 function toggleTask(id) {
-  const t = tasks.find(x => x.id === id);
-  if (t) t.done = !t.done;
+  const t = tasks.find(x => x.id === id); if (t) t.done = !t.done;
   saveTasks(); renderTasks();
 }
 function deleteTask(id) {
-  tasks = tasks.filter(x => x.id !== id);
-  saveTasks(); renderTasks();
+  tasks = tasks.filter(x => x.id !== id); saveTasks(); renderTasks();
 }
 function saveTasks() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
 function renderTasks() {
@@ -395,26 +430,43 @@ function renderTasks() {
   if (tasks.length === 0) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
   tasks.forEach(t => {
-    const div = document.createElement('div');
-    div.className = `flex items-center justify-between p-3 rounded-xl border-2 ${t.done ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200'}`;
-    div.innerHTML = `
-      <p class="font-semibold text-sm ${t.done ? 'line-through text-green-700' : 'text-slate-800'}">${t.title}</p>
-      <div class="flex gap-1">
-        <button onclick="toggleTask(${t.id})" class="px-3 py-1 rounded-lg font-semibold text-white text-xs ${t.done ? 'bg-slate-400' : 'bg-blue-600'}">${t.done ? 'Undo' : 'Done'}</button>
-        <button onclick="deleteTask(${t.id})" class="px-2 py-1 rounded-lg bg-red-100 text-red-600 text-xs">✕</button>
-      </div>`;
-    list.appendChild(div);
+    const d = document.createElement('div');
+    d.className = 'flex items-center justify-between p-3 rounded-xl border-2 ' + (t.done ? 'bg-green-50 border-green-300' : 'bg-slate-50 border-slate-200');
+    d.innerHTML = '<p class="font-semibold text-sm ' + (t.done ? 'line-through text-green-700' : 'text-slate-800') + '">' + t.title + '</p>' +
+      '<div class="flex gap-1"><button onclick="toggleTask(' + t.id + ')" class="px-3 py-1 rounded-lg text-white text-xs ' +
+      (t.done ? 'bg-slate-400' : 'bg-blue-600') + '">' + (t.done ? 'Undo' : 'Done') + '</button>' +
+      '<button onclick="deleteTask(' + t.id + ')" class="px-2 py-1 rounded-lg bg-red-100 text-red-600 text-xs">✕</button></div>';
+    list.appendChild(d);
   });
+}
+
+function shareReport() {
+  let report = '🏥 ElderCare Connect - Health Report\n\n';
+  const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
+  report += '👤 Senior: ' + (p?.name || 'N/A') + '\n\n💊 MEDICINES:\n';
+  medicines.forEach(m => { report += '• ' + m.name + ' - ' + m.qty + ' at ' + m.time + ' (' + m.food + ')\n'; });
+  report += '\n❤️ VITALS:\n';
+  vitals.forEach(v => { report += '• ' + v.date + ': BP ' + (v.bp||'-') + ', Sugar ' + (v.sugar||'-') + ', Weight ' + (v.weight||'-') + '\n'; });
+  report += '\n👨‍⚕️ APPOINTMENTS:\n';
+  appointments.forEach(a => { report += '• ' + a.doctor + ' on ' + a.date + ' at ' + a.time + '\n'; });
+  if (navigator.share) {
+    navigator.share({ title: 'Health Report', text: report });
+  } else {
+    navigator.clipboard.writeText(report).then(() => alert('✅ Report copied!'));
+  }
 }
 
 function emergencyAlert() {
   const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
   const name = p?.name || 'Senior';
-  const msg = `🚨 EMERGENCY ALERT!\n\n${name} needs immediate help.\n\nTime: ${new Date().toLocaleString('en-IN')}`;
-  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+  const msg = '🚨 EMERGENCY!\n\n' + name + ' needs help.\nTime: ' + new Date().toLocaleString('en-IN');
+  if (navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
   alert(msg);
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('🚨 EMERGENCY ALERT', { body: `${name} needs help!` });
+    new Notification('🚨 EMERGENCY', { body: name + ' needs help!' });
+  }
+  if (navigator.share) {
+    navigator.share({ title: '🚨 EMERGENCY', text: msg });
   }
 }
 
