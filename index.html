@@ -13,6 +13,8 @@
   body { background: #f0f4f8; color: #1e293b; }
   .btn-large { min-height: 60px; font-size: 18px; font-weight: 600; }
   .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .suggestion-item { cursor: pointer; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+  .suggestion-item:hover { background: #f1f5f9; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -64,6 +66,16 @@
   © 2026 ElderCare Connect • Made with ❤️ for families
 </footer>
 
+<!-- Medicine Search Modal -->
+<div id="medicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md">
+    <h3 class="text-lg font-bold mb-4">Search Medicine</h3>
+    <input id="medicineSearch" type="text" placeholder="Type at least 2 letters..." class="w-full border-2 border-slate-200 rounded-lg p-3 text-lg focus:border-blue-500 outline-none" oninput="searchMedicine(this.value)">
+    <div id="suggestions" class="mt-3 max-h-60 overflow-y-auto"></div>
+    <button onclick="closeMedicineModal()" class="mt-4 w-full bg-slate-300 hover:bg-slate-400 text-slate-700 font-semibold py-3 rounded-lg">Cancel</button>
+  </div>
+</div>
+
 <script>
 let medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
 let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
@@ -92,14 +104,50 @@ window.onload = () => {
   renderTasks();
 };
 
+// --- MEDICINE SEARCH (NIH Clinical Tables) ---
 function addMedicine() {
-  const name = prompt('Medicine name:');
-  if (!name) return;
-  const time = prompt('Time (e.g., 09:00 AM):');
-  if (!time) return;
-  medicines.push({ id: Date.now(), name, time, taken: false });
-  saveMedicines(); renderMedicines();
+  document.getElementById('medicineModal').classList.remove('hidden');
+  document.getElementById('medicineModal').classList.add('flex');
+  document.getElementById('medicineSearch').value = '';
+  document.getElementById('suggestions').innerHTML = '';
+  document.getElementById('medicineSearch').focus();
 }
+function closeMedicineModal() {
+  document.getElementById('medicineModal').classList.add('hidden');
+  document.getElementById('medicineModal').classList.remove('flex');
+}
+
+async function searchMedicine(query) {
+  const suggestions = document.getElementById('suggestions');
+  if (query.length < 2) { suggestions.innerHTML = ''; return; }
+  suggestions.innerHTML = '<p class="text-slate-400 p-2">Searching...</p>';
+  
+  try {
+    const res = await fetch(`https://clinicaltables.nlm.nih.gov/api/rxterms/v3/search?terms=${encodeURIComponent(query)}&maxList=8`);
+    const data = await res.json();
+    suggestions.innerHTML = '';
+    if (data[1] && data[1].length > 0) {
+      data[1].forEach(name => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.textContent = name;
+        div.onclick = () => {
+          const time = prompt('Time (e.g., 09:00 AM):', '09:00 AM');
+          if (!time) return;
+          medicines.push({ id: Date.now(), name: name, time: time, taken: false });
+          saveMedicines(); renderMedicines(); closeMedicineModal();
+        };
+        suggestions.appendChild(div);
+      });
+    } else {
+      suggestions.innerHTML = '<p class="text-slate-400 p-2">No medicine found. Check spelling.</p>';
+    }
+  } catch (e) {
+    suggestions.innerHTML = '<p class="text-red-400 p-2">Search failed. Check internet.</p>';
+  }
+}
+
+// --- MEDICINE CRUD ---
 function toggleMedicine(id) {
   const m = medicines.find(x => x.id === id);
   if (m) m.taken = !m.taken;
@@ -132,6 +180,7 @@ function renderMedicines() {
   });
 }
 
+// --- TASKS ---
 function addTask() {
   const title = prompt('Task:');
   if (!title) return;
@@ -169,6 +218,7 @@ function renderTasks() {
   });
 }
 
+// --- EMERGENCY ---
 function emergencyAlert() {
   const p = JSON.parse(localStorage.getItem('seniorProfile') || 'null');
   const name = p?.name || 'Senior';
@@ -177,8 +227,6 @@ function emergencyAlert() {
   alert(msg);
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification('🚨 EMERGENCY ALERT', { body: `${name} needs help!` });
-  } else if ('Notification' in window) {
-    Notification.requestPermission();
   }
 }
 
