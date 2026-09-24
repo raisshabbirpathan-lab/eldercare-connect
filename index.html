@@ -261,7 +261,8 @@ function searchMedicine(q) {
   const s = document.getElementById('suggestions');
   s.innerHTML = '';
   if (q.length < 2) { s.innerHTML = '<p class="text-slate-400 p-2">Type 2 letters...</p>'; return; }
-  const matches = medicineDatabase.filter(m => m.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+  if (medicineDatabase.length === 0) { s.innerHTML = '<p class="text-slate-400 p-2">Loading medicines...</p>'; return; }
+  const matches = medicineDatabase.filter(m => m.toLowerCase().includes(q.toLowerCase())).slice(0, 10);
   if (matches.length === 0) {
     const d = document.createElement('div'); d.className = 'suggestion-item';
     d.textContent = '➕ Add "' + q + '" (custom)';
