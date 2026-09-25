@@ -6,6 +6,7 @@
 <title>ElderCare Connect - Complete Care Management</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
+<meta name="description" content="Free elder care app for families. Track medicines, health vitals, doctor appointments and emergency alerts.">
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -20,6 +21,9 @@
   .form-input { width: 100%; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 15px; outline: none; }
   .form-input:focus { border-color: #2563eb; }
   .tab-btn { padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+  /* Cookie Banner */
+  #cookieBanner { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; color: white; padding: 16px; z-index: 100; display: none; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); }
+  #cookieBanner.show { display: block; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -118,8 +122,24 @@
 </main>
 
 <footer class="text-center text-slate-400 text-sm py-6">
-  © 2026 ElderCare Connect • Made with ❤️
+  <p>© 2026 ElderCare Connect • Made with ❤️</p>
+  <div class="mt-2 space-x-4 text-xs">
+    <a href="privacy.html" class="hover:text-blue-600 underline">Privacy Policy</a>
+    <a href="disclaimer.html" class="hover:text-blue-600 underline">Medical Disclaimer</a>
+    <a href="terms.html" class="hover:text-blue-600 underline">Terms of Service</a>
+  </div>
 </footer>
+
+<!-- Cookie Consent Banner -->
+<div id="cookieBanner">
+  <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+    <p class="text-sm text-center md:text-left">🍪 We use cookies to improve your experience. By continuing, you agree to our <a href="privacy.html" class="underline text-sky-400">Privacy Policy</a>.</p>
+    <div class="flex gap-2">
+      <button onclick="acceptCookies()" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold px-4 py-2 rounded-lg text-sm">Accept</button>
+      <button onclick="declineCookies()" class="bg-slate-600 hover:bg-slate-700 text-white font-semibold px-4 py-2 rounded-lg text-sm">Decline</button>
+    </div>
+  </div>
+</div>
 
 <div id="medicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-5 w-full max-w-md max-h-screen overflow-y-auto">
@@ -194,13 +214,28 @@ let selectedDay = new Date().getDay();
 let tempMedicineName = '';
 let medicineDatabase = [];
 
-// Load medicines from JSON file
 fetch('/medicines.json')
   .then(r => r.json())
   .then(d => { medicineDatabase = d.medicines || []; })
   .catch(e => console.error('Failed to load medicines:', e));
 
 const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+// Cookie Consent
+function checkCookies() {
+  if (!localStorage.getItem('cookieConsent')) {
+    document.getElementById('cookieBanner').classList.add('show');
+  }
+}
+function acceptCookies() {
+  localStorage.setItem('cookieConsent', 'accepted');
+  document.getElementById('cookieBanner').classList.remove('show');
+}
+function declineCookies() {
+  localStorage.setItem('cookieConsent', 'declined');
+  document.getElementById('cookieBanner').classList.remove('show');
+}
+checkCookies();
 
 function toggleLanguage() {
   const btn = document.getElementById('langBtn');
